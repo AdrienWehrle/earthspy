@@ -15,5 +15,5 @@ As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 
 
 * Environment setup
-* Module usage
+* Examples
 * Operational Near Real-Time (NRT) deployment 
