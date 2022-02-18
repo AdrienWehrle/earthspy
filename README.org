@@ -1,3 +1,6 @@
+[[https://www.gnu.org/licenses/gpl-3.0][https://img.shields.io/badge/License-GPLv3-blue.svg]]
+[[https://github.com/AdrienWehrle/sat-spy/actions][file:https://github.com/AdrienWehrle/sat-spy/workflows/lint_python/badge.svg]]
+
 * sat-spy
 
 =sat-spy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and NRT applications.
