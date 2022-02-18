@@ -1,0 +1,16 @@
+* sat-spy
+
+=sat-spy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and NRT applications.
+
+Some useful capabilities: 
+  - Data download in multiprocessing
+  - Data download at optimized resolutions with the Direct Download (DD) method 
+  - Data download at raw resolution with the Split and Merge Downlodad (SMD) method
+  - Data storage with an efficient structure
+
+As =sat-spy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
+
+
+* Environment setup
+* Module usage
+* Operational Near Real-Time (NRT) deployment 
