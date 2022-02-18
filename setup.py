@@ -7,7 +7,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.org').read_text(encoding='utf-8')
 
 setup(
-    name='sat-spy',
+    name='earthspy',
     version='0.1.0',
     description='Wrapper for sentinelhub-py services',
     long_description=long_description,  
