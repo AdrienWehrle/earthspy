@@ -3,6 +3,12 @@
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
+TODO:
+  - comment code properly
+  - generate documentation
+  - add simple visualisations so rasters don't have to be loaded for
+    very superficial checks
+
 """
 
 import os
@@ -15,7 +21,7 @@ from sentinelhub import (
     bbox_to_dimensions,
     DataCollection,
     CRS,
-    BBoxSplitter
+    BBoxSplitter,
 )
 import glob
 import pandas as pd
@@ -32,19 +38,19 @@ import sys
 from shapely.geometry import shape, Polygon, MultiPolygon, MultiLineString
 
 
-class satspy:
+class SatSpy:
     def __init__(self, CLIENT_credentials_file: str) -> None:
 
         with open(CLIENT_credentials_file, "r") as file:
             credentials = file.read().splitlines()
-            
+
         self.CLIENT_ID = credentials[0]
         self.CLIENT_SECRET = credentials[1]
 
         self.configure_connection()
 
         return None
-    
+
     def configure_connection(self) -> SHConfig:
 
         self.config = SHConfig()
@@ -63,7 +69,7 @@ class satspy:
         store_folder: Union[str, None] = None,
         multiprocessing: bool = True,
         nb_cores: Union[int, None] = None,
-        download_method: str = 'SPD',
+        download_method: str = "SPD",
         verbose: bool = True,
     ) -> None:
 
@@ -74,28 +80,33 @@ class satspy:
         self.data_collection_str = data_collection
         self.get_data_collection()
         self.get_data_collection_resolution()
-        
+
         if self.multiprocessing:
             self.set_number_of_cores(nb_cores)
 
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
-        
+
         if resolution:
             self.resolution = resolution
         else:
             max_resolution = self.get_max_resolution()
 
-        if max_resolution == self.data_collection_resolution and self.download_method == 'SPD':
-            self.download_method = 'DD'
+        if (
+            max_resolution == self.data_collection_resolution
+            and self.download_method == "SPD"
+        ):
+            self.download_method = "DD"
 
             if self.verbose:
-                print("Split and Merge Download (SPD) is not needed to reach the maximum data resolution. Switching to Direct Download (DD).")
+                print(
+                    "Split and Merge Download (SPD) is not needed to reach the maximum data resolution. Switching to Direct Download (DD)."
+                )
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
 
         return None
-    
+
     def get_data_collection(self):
 
         self.data_collection = DataCollection[self.data_collection_str]
@@ -104,22 +115,24 @@ class satspy:
 
     def get_data_collection_resolution(self):
 
-        satellite = self.data_collection_str.split('_')[0]
+        satellite = self.data_collection_str.split("_")[0]
 
-        if satellite == 'SENTINEL1':
+        if satellite == "SENTINEL1":
             self.data_collection_resolution = 5
-        elif satellite == 'SENTINEL2':
+        elif satellite == "SENTINEL2":
             self.data_collection_resolution = 10
-        elif satellite == 'SENTINEL3':
+        elif satellite == "SENTINEL3":
             self.data_collection_resolution = 300
         else:
             self.data_collection_resolution = 1000
 
             if self.verbose:
-                print("Satellite resolution not implemented yet. Data collection resolution is set to 1km and will be refined.")
+                print(
+                    "Satellite resolution not implemented yet. Data collection resolution is set to 1km and will be refined."
+                )
 
         return self.data_collection_resolution
-    
+
     def set_number_of_cores(self, nb_cores: Union[None, int]):
 
         if not nb_cores:
@@ -208,7 +221,7 @@ class satspy:
             points[1][0],
             points[1][1],
         ]
-        
+
         return self.bounding_box_meters
 
     def get_max_resolution(self) -> None:
@@ -244,13 +257,15 @@ class satspy:
             )
             return None  # self.resolution = None
 
-        if 'max_resolution' in locals() and max_resolution > self.resolution:
+        if "max_resolution" in locals() and max_resolution > self.resolution:
 
             self.resolution = max_resolution
 
             if self.verbose:
-                print("The resolution entered is too high for a Direct Download (DD) and has been set to the maximum resolution achievable withis method. Consider using the Split and Merge Download (SMD) to always attain the highest resolution independently of the area.")
-                
+                print(
+                    "The resolution entered is too high for a Direct Download (DD) and has been set to the maximum resolution achievable withis method. Consider using the Split and Merge Download (SMD) to always attain the highest resolution independently of the area."
+                )
+
         return max_resolution
 
     def get_optimal_box_split(self):
@@ -261,7 +276,7 @@ class satspy:
         dy = np.abs(self.bounding_box_meters[3] - self.bounding_box_meters[1])
 
         trial_split_boxes = np.arange(2, 100)
-        
+
         boxes_pixels_x = (dx / trial_split_boxes) / self.data_collection_resolution
         boxes_pixels_y = (dy / trial_split_boxes) / self.data_collection_resolution
 
@@ -269,31 +284,35 @@ class satspy:
         min_nb_boxes_y = trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]]
 
         return min_nb_boxes_x, min_nb_boxes_y
-    
+
     def get_split_boxes(self):
 
         nb_boxes_x, nb_boxes_y = self.get_optimal_box_split()
 
         if self.verbose:
-            print(f"Initial bounding box will be split into a ({nb_boxes_x}, {nb_boxes_y}) grid")
-        
+            print(
+                f"Initial bounding box will be split into a ({nb_boxes_x}, {nb_boxes_y}) grid"
+            )
+
         bbox = [
-                (self.bounding_box[0][0], self.bounding_box[0][1]),
-                (self.bounding_box[1][0], self.bounding_box[0][1]),
-                (self.bounding_box[1][0], self.bounding_box[1][1]),
-                (self.bounding_box[0][0], self.bounding_box[1][1])
+            (self.bounding_box[0][0], self.bounding_box[0][1]),
+            (self.bounding_box[1][0], self.bounding_box[0][1]),
+            (self.bounding_box[1][0], self.bounding_box[1][1]),
+            (self.bounding_box[0][0], self.bounding_box[1][1]),
         ]
-        
+
         bbox_polygon = Polygon(bbox)
 
-        bbox_splitter = BBoxSplitter([bbox_polygon], "epsg:4326", (nb_boxes_x, nb_boxes_y))
+        bbox_splitter = BBoxSplitter(
+            [bbox_polygon], "epsg:4326", (nb_boxes_x, nb_boxes_y)
+        )
 
         bbox_list = bbox_splitter.get_bbox_list()
 
         self.split_boxes = bbox_list
-        
+
         return self.split_boxes
-        
+
     def get_evaluation_script_from_link(
         self, evaluation_script: Union[None, str]
     ) -> None:
@@ -346,9 +365,7 @@ class satspy:
                     other_args={"processing": {"orthorectify": True}},
                 )
             ],
-            responses=[
-                SentinelHubRequest.output_response("default", MimeType.TIFF),
-            ],
+            responses=[SentinelHubRequest.output_response("default", MimeType.TIFF),],
             bbox=loc_bbox,
             size=loc_size,
             config=self.config,
@@ -377,7 +394,7 @@ class satspy:
 
         self.output_filenames = []
 
-        for folder in folders:
+        for i, folder in enumerate(folders):
 
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
@@ -386,8 +403,15 @@ class satspy:
                 "from"
             ][:10]
 
-            # TODO: create folder with area name if there is one
-            new_filename = f"{self.store_folder}/{date}_{self.data_collection_str}.tif"
+            if self.download_method == "DD":
+                new_filename = (
+                    f"{self.store_folder}/{date}_{self.data_collection_str}.tif"
+                )
+            elif self.download_method == "SMD":
+                new_filename = (
+                    f"{self.store_folder}/{date}_{i}_{self.data_collection_str}.tif"
+                )
+
             os.rename(f"{folder}/response.tiff", new_filename)
 
             self.output_filenames.append(new_filename)
@@ -398,7 +422,7 @@ class satspy:
                 shutil.rmtree(f"{self.store_folder}/{name}")
 
         return None
-    
+
     def send_sentinelhub_requests(self) -> None:
 
         if self.verbose:
