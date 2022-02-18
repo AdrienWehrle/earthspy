@@ -61,7 +61,7 @@ class EarthSpy:
         store_folder: Union[str, None] = None,
         multiprocessing: bool = True,
         nb_cores: Union[int, None] = None,
-        download_method: str = "SPD",
+        download_method: str = "SM",
         verbose: bool = True,
     ) -> None:
 
@@ -242,8 +242,8 @@ class EarthSpy:
                 origin = "y"
 
             raise IndexError(
-                f"Calculated resolution above 10km forced by {origin} dimension(s), "\
-                "please narrow down your study area."
+                f"Calculated resolution above 10km forced by {origin} dimension(s). "\
+                "Consider narrowing down the study area."
             )
             return None
 
@@ -253,24 +253,25 @@ class EarthSpy:
 
     def set_correct_resolution(self):
 
-        # get maximum resolution that can be used in DD
+        # get maximum resolution that can be used in D
         max_resolution = self.get_max_resolution()
-        
-        if not self.resolution and self.download_method == "DD":
+
+        # default resolutions
+        if not self.resolution and self.download_method == "D":
             self.resolution = max_resolution
-        elif not self.resolution and self.download_method == "SPD":
+        elif not self.resolution and self.download_method == "SM":
             self.resolution = self.data_collection_resolution
 
-        # limit resolution to max number of pixels if using DD 
-        if max_resolution > self.resolution:
+        # limit resolution to max number of pixels if using D
+        if self.download_method == "D" and self.resolution < max_resolution:
 
             self.resolution = max_resolution
 
             if self.verbose:
                 print(
-                    'The resolution entered is too high for a Direct Download (DD) '\
-                    'and has been set to the maximum resolution achievable with this method. '\
-                    'Consider using the Split and Merge Download (SMD) to always attain '\
+                    'The resolution entered is too high for a Direct Download (D) '\
+                    'and has been set to the maximum resolution achievable with D. '\
+                    'Consider using the Split and Merge Download (SM) to always attain '\
                     'the highest resolution independently of the area.'\
                 )
 
@@ -283,18 +284,18 @@ class EarthSpy:
                       "the raw data set resolution. Resolution is set "\
                       "to raw resolution.")
                 
-        # don't use SPD if DD can be used with full resolution
+        # don't use SM if D can be used with full resolution
         if (
             max_resolution == self.data_collection_resolution
-            and self.download_method == "SPD"
+            and self.download_method == "SM"
         ):
-            self.download_method = "DD"
+            self.download_method = "D"
 
             if self.verbose:
                 print(
-                    "Split and Merge Download (SPD) is not needed to reach "\
+                    "Split and Merge (SM) download is not needed to reach "\
                     "the maximum data resolution. Switching to Direct "\
-                    "Download (DD)."
+                    "(D) download."
                 )
 
         return None
@@ -436,11 +437,11 @@ class EarthSpy:
                 "from"
             ][:10]
 
-            if self.download_method == "DD":
+            if self.download_method == "D":
                 new_filename = (
                     f"{self.store_folder}/{date}_{self.data_collection_str}.tif"
                 )
-            elif self.download_method == "SMD":
+            elif self.download_method == "SM":
                 new_filename = (
                     f"{self.store_folder}/{date}_{i}_{self.data_collection_str}.tif"
                 )
