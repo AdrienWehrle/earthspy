@@ -102,7 +102,8 @@ class SatSpy:
 
             if self.verbose:
                 print(
-                    "Split and Merge Download (SPD) is not needed to reach the maximum data resolution. Switching to Direct Download (DD)."
+                    "Split and Merge Download (SPD) is not needed to reach the maximum data resolution. \
+                    Switching to Direct Download (DD)."
                 )
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
@@ -130,7 +131,8 @@ class SatSpy:
 
             if self.verbose:
                 print(
-                    "Satellite resolution not implemented yet. Data collection resolution is set to 1km and will be refined."
+                    "Satellite resolution not implemented yet. Data collection resolution is\
+                    set to 1km and will be refined."
                 )
 
         return self.data_collection_resolution
