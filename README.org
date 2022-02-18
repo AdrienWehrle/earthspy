@@ -1,6 +1,9 @@
-* sat-spy
+[[https://www.gnu.org/licenses/gpl-3.0][https://img.shields.io/badge/License-GPLv3-blue.svg]]
+[[https://github.com/AdrienWehrle/sat-spy/actions][file:https://github.com/AdrienWehrle/sat-spy/workflows/lint_python/badge.svg]]
 
-=sat-spy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and NRT applications.
+* earthspy
+
+=earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and NRT applications.
 
 Some useful capabilities: 
   - Data download in multiprocessing
@@ -8,7 +11,7 @@ Some useful capabilities:
   - Data download at raw resolution with the Split and Merge Downlodad (SMD) method
   - Data storage with an efficient structure
 
-As =sat-spy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
+As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
 
 
 * Environment setup

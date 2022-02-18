@@ -40,7 +40,7 @@ import sys
 from shapely.geometry import shape, Polygon, MultiPolygon, MultiLineString
 
 
-class SatSpy:
+class EarthSpy:
     def __init__(self, CLIENT_credentials_file: str) -> None:
 
         with open(CLIENT_credentials_file, "r") as file:
