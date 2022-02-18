@@ -19,6 +19,7 @@ import json
 from multiprocessing import cpu_count, Pool, freeze_support
 import numpy as np
 import os
+from osgeo_utils import gdal_merge
 import pandas as pd
 import pyproj
 import requests
@@ -73,18 +74,20 @@ class EarthSpy:
         self.get_data_collection()
         self.get_satellite_name()
         self.get_data_collection_resolution()
-        
-        if resolution:
-            self.resolution = resolution
-
-        # set and correctresolution
-        self.set_correct_resolution()
-        
-        if self.multiprocessing:
-            self.set_number_of_cores(nb_cores)
 
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
+
+        if resolution:
+            self.resolution = resolution
+        else:
+            self.resolution = None
+
+        # set and correctresolution
+        self.set_correct_resolution()
+
+        if self.multiprocessing:
+            self.set_number_of_cores(nb_cores)
 
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
@@ -93,7 +96,7 @@ class EarthSpy:
             self.split_boxes = [shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)]
         elif download_method == "SM":
             self.get_split_boxes()
-        
+
         return None
 
     def get_data_collection(self):
@@ -107,7 +110,7 @@ class EarthSpy:
         self.satellite = self.data_collection_str.split("_")[0]
 
         return self.satellite
-    
+
     def get_data_collection_resolution(self):
 
         if self.satellite == "SENTINEL1":
@@ -121,7 +124,7 @@ class EarthSpy:
 
             if self.verbose:
                 print(
-                    "Satellite resolution not implemented yet. Data collection "\
+                    "Satellite resolution not implemented yet. Data collection "
                     "resolution is set to 1km and will be refined."
                 )
 
@@ -150,11 +153,15 @@ class EarthSpy:
             self.date_range = pd.date_range(nb_days_back, today)
 
         elif isinstance(time_interval, list):
-            self.date_range = pd.date_range(time_interval[0], time_interval[1])
+
+            if len(time_interval) > 1:
+                self.date_range = pd.date_range(time_interval[0], time_interval[1])
+            else:
+                self.date_range = pd.date_range(time_interval[0], time_interval[0])
 
         elif isinstance(time_interval, str):
             self.date_range = pd.date_range(time_interval, time_interval)
-        
+
         return self.date_range
 
     def get_bounding_box(self, bounding_box) -> list:
@@ -174,12 +181,12 @@ class EarthSpy:
 
     def get_store_folder(self, store_folder) -> str:
 
+        if store_folder is None:
+            store_folder = f"/home/{os.getlogin()}/Downloads"
+
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
-        if not self.store_folder:
-            self.store_folder = f'/home/{os.getlogin()}/Downloads/'
-            
         if isinstance(self.bounding_box, list):
             folder_name = "earthspy"
 
@@ -249,14 +256,12 @@ class EarthSpy:
                 origin = "y"
 
             raise IndexError(
-                f"Calculated resolution above 10km forced by {origin} dimension(s). "\
+                f"Calculated resolution above 10km forced by {origin} dimension(s). "
                 "Consider narrowing down the study area."
             )
             return None
 
-        
         return max_resolution
-
 
     def set_correct_resolution(self):
 
@@ -276,10 +281,10 @@ class EarthSpy:
 
             if self.verbose:
                 print(
-                    'The resolution entered is too high for a Direct Download (D) '\
-                    'and has been set to the maximum resolution achievable with D. '\
-                    'Consider using the Split and Merge Download (SM) to always attain '\
-                    'the highest resolution independently of the area.'\
+                    "The resolution entered is too high for a Direct Download (D) "
+                    "and has been set to the maximum resolution achievable with D. "
+                    "Consider using the Split and Merge Download (SM) to always attain "
+                    "the highest resolution independently of the area."
                 )
 
         # resolution can't be higher than raw data
@@ -287,10 +292,12 @@ class EarthSpy:
             self.resolution = self.data_collection_resolution
 
             if self.verbose:
-                print("The resolution prescribed is higher than "\
-                      "the raw data set resolution. Resolution is set "\
-                      "to raw resolution.")
-                
+                print(
+                    "The resolution prescribed is higher than "
+                    "the raw data set resolution. Resolution is set "
+                    "to raw resolution."
+                )
+
         # don't use SM if D can be used with full resolution
         if (
             max_resolution == self.data_collection_resolution
@@ -300,13 +307,13 @@ class EarthSpy:
 
             if self.verbose:
                 print(
-                    "Split and Merge (SM) download is not needed to reach "\
-                    "the maximum data resolution. Switching to Direct "\
+                    "Split and Merge (SM) download is not needed to reach "
+                    "the maximum data resolution. Switching to Direct "
                     "(D) download."
                 )
 
         return None
-    
+
     def get_optimal_box_split(self):
 
         self.convert_bounding_box_coordinates()
@@ -319,8 +326,8 @@ class EarthSpy:
         boxes_pixels_x = (dx / trial_split_boxes) / self.data_collection_resolution
         boxes_pixels_y = (dy / trial_split_boxes) / self.data_collection_resolution
 
-        min_nb_boxes_x = trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]]
-        min_nb_boxes_y = trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]]
+        min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
+        min_nb_boxes_y = int(trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]])
 
         return min_nb_boxes_x, min_nb_boxes_y
 
@@ -334,10 +341,10 @@ class EarthSpy:
             )
 
         bbox = [
-            (self.bounding_box[0][0], self.bounding_box[0][1]),
-            (self.bounding_box[1][0], self.bounding_box[0][1]),
-            (self.bounding_box[1][0], self.bounding_box[1][1]),
-            (self.bounding_box[0][0], self.bounding_box[1][1]),
+            (self.bounding_box[0], self.bounding_box[1]),
+            (self.bounding_box[2], self.bounding_box[1]),
+            (self.bounding_box[2], self.bounding_box[3]),
+            (self.bounding_box[0], self.bounding_box[3]),
         ]
 
         bbox_polygon = Polygon(bbox)
@@ -393,7 +400,6 @@ class EarthSpy:
 
         date_string = date.strftime("%Y-%m-%d")
 
-
         for loc_bbox in self.split_boxes:
 
             loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
@@ -409,8 +415,10 @@ class EarthSpy:
                     )
                 ],
                 responses=[
-                    shb.SentinelHubRequest.output_response("default",
-                                                           shb.MimeType.TIFF),],
+                    shb.SentinelHubRequest.output_response(
+                        "default", shb.MimeType.TIFF
+                    ),
+                ],
                 bbox=loc_bbox,
                 size=loc_size,
                 config=self.config,
@@ -469,7 +477,7 @@ class EarthSpy:
         return None
 
     def send_sentinelhub_requests(self) -> None:
-        
+
         if self.verbose:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
@@ -490,6 +498,9 @@ class EarthSpy:
 
         self.rename_output_files()
 
+        if self.download_method == "SM":
+            self.merge_rasters()
+
         if self.verbose:
             end_time = time.time()
             end_local_time = time.ctime(end_time)
@@ -497,6 +508,22 @@ class EarthSpy:
             print("--- Processing time: %s minutes ---" % processing_time)
             print("--- Start time: %s ---" % start_local_time)
             print("--- End time: %s ---" % end_local_time)
+
+    def merge_rasters(self):
+
+        output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
+        output_filename = output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
+
+        parameters = (
+            ["", "-o", output_filename]
+            + ["-n", "0.0"]
+            + output_files
+            + ["-co", "COMPRESS=LZW"]
+        )
+
+        gdal_merge.main(parameters)
+
+        return None
 
     def create_png_visuals(self):
         return None
