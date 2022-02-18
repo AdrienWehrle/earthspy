@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-@author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
+@author: Adrien Wehrlé, GEUS (Geological Survey of Denmark and Greenland)
 
 """
 
@@ -35,7 +35,7 @@ from shapely.geometry import shape, Polygon, MultiPolygon, MultiLineString
 class satspy:
     def __init__(self, CLIENT_credentials_file: str) -> None:
 
-        with open(CLIENT_credentials_file, "r") as file:
+        with open (CLIENT_credentials_file, "r") as file:
             credentials = file.read().splitlines()
             
         self.CLIENT_ID = credentials[0]
@@ -209,7 +209,7 @@ class satspy:
             points[1][1],
         ]
         
-        return self.bounding_box_meters
+        return self.bouding_box_meters
 
     def get_max_resolution(self) -> None:
 
@@ -286,13 +286,10 @@ class satspy:
         
         bbox_polygon = Polygon(bbox)
 
-        bbox_splitter = BBoxSplitter([bbox_polygon], "epsg:4326", (nb_boxes_x, nb_boxes_y))
+        bb_splitter = BBoxSplitter([bbox_polygon], "epsg:4326", (nb_boxes_x, nb_boxes_y))
 
-        bbox_list = bbox_splitter.get_bbox_list()
-
-        self.split_boxes = bbox_list
         
-        return self.split_boxes
+        return None
         
     def get_evaluation_script_from_link(
         self, evaluation_script: Union[None, str]
