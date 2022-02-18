@@ -73,18 +73,20 @@ class EarthSpy:
         self.get_data_collection()
         self.get_satellite_name()
         self.get_data_collection_resolution()
+
+        self.get_date_range(time_interval)
+        self.get_bounding_box(bounding_box)
         
         if resolution:
             self.resolution = resolution
-
+        else:
+            self.resolution = None
+            
         # set and correctresolution
         self.set_correct_resolution()
         
         if self.multiprocessing:
             self.set_number_of_cores(nb_cores)
-
-        self.get_date_range(time_interval)
-        self.get_bounding_box(bounding_box)
 
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
@@ -150,7 +152,11 @@ class EarthSpy:
             self.date_range = pd.date_range(nb_days_back, today)
 
         elif isinstance(time_interval, list):
-            self.date_range = pd.date_range(time_interval[0], time_interval[1])
+
+            if len(time_interval) > 1:
+                self.date_range = pd.date_range(time_interval[0], time_interval[1])
+            else:
+                self.date_range = pd.date_range(time_interval[0], time_interval[0])
 
         elif isinstance(time_interval, str):
             self.date_range = pd.date_range(time_interval, time_interval)
@@ -174,11 +180,11 @@ class EarthSpy:
 
     def get_store_folder(self, store_folder) -> str:
 
+        if store_folder is None:
+            store_folder = f'/home/{os.getlogin()}/Downloads'
+
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
-
-        if not self.store_folder:
-            self.store_folder = f'/home/{os.getlogin()}/Downloads/'
             
         if isinstance(self.bounding_box, list):
             folder_name = "earthspy"
@@ -197,6 +203,7 @@ class EarthSpy:
 
     def convert_bounding_box_coordinates(self):
 
+        
         trf = pyproj.Transformer.from_crs(
             f"epsg:{self.crs}", "epsg:3413", always_xy=True
         )
