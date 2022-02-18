@@ -71,31 +71,21 @@ class EarthSpy:
 
         self.data_collection_str = data_collection
         self.get_data_collection()
+        self.get_satellite_name()
         self.get_data_collection_resolution()
+        
+        if resolution:
+            self.resolution = resolution
 
+        # set and correctresolution
+        self.set_correct_resolution()
+        
         if self.multiprocessing:
             self.set_number_of_cores(nb_cores)
 
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
 
-        if resolution:
-            self.resolution = resolution
-        else:
-            max_resolution = self.get_max_resolution()
-
-        if (
-            max_resolution == self.data_collection_resolution
-            and self.download_method == "SPD"
-        ):
-            self.download_method = "DD"
-
-            if self.verbose:
-                print(
-                    "Split and Merge Download (SPD) is not needed to reach "\
-                    "the maximum data resolution. Switching to Direct "\
-                    "Download (DD)."
-                )
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
 
@@ -107,15 +97,19 @@ class EarthSpy:
 
         return self.data_collection
 
+    def get_satellite_name(self):
+
+        self.satellite = self.data_collection_str.split("_")[0]
+
+        return self.satellite
+    
     def get_data_collection_resolution(self):
 
-        satellite = self.data_collection_str.split("_")[0]
-
-        if satellite == "SENTINEL1":
+        if self.satellite == "SENTINEL1":
             self.data_collection_resolution = 5
-        elif satellite == "SENTINEL2":
+        elif self.satellite == "SENTINEL2":
             self.data_collection_resolution = 10
-        elif satellite == "SENTINEL3":
+        elif self.satellite == "SENTINEL3":
             self.data_collection_resolution = 300
         else:
             self.data_collection_resolution = 1000
@@ -180,7 +174,7 @@ class EarthSpy:
             os.makedirs(store_folder)
 
         if isinstance(self.bounding_box, list):
-            folder_name = "glacierspy"
+            folder_name = "earthspy"
 
         elif isinstance(self.bounding_box, str):
             folder_name = self.bounding_box
@@ -251,22 +245,60 @@ class EarthSpy:
                 f"Calculated resolution above 10km forced by {origin} dimension(s), "\
                 "please narrow down your study area."
             )
-            return None  # self.resolution = None
+            return None
 
-        if "max_resolution" in locals() and max_resolution > self.resolution:
+        
+        return max_resolution
+
+
+    def set_correct_resolution(self):
+
+        # get maximum resolution that can be used in DD
+        max_resolution = self.get_max_resolution()
+        
+        if not self.resolution and self.download_method == "DD":
+            self.resolution = max_resolution
+        elif not self.resolution and self.download_method == "SPD":
+            self.resolution = self.data_collection_resolution
+
+        # limit resolution to max number of pixels if using DD 
+        if max_resolution > self.resolution:
 
             self.resolution = max_resolution
 
             if self.verbose:
                 print(
                     'The resolution entered is too high for a Direct Download (DD) '\
-                    'and has been set to the maximum resolution achievable withis method. '\
+                    'and has been set to the maximum resolution achievable with this method. '\
                     'Consider using the Split and Merge Download (SMD) to always attain '\
                     'the highest resolution independently of the area.'\
                 )
 
-        return max_resolution
+        # resolution can't be higher than raw data
+        if self.resolution < self.data_collection_resolution:
+            self.resolution = self.data_collection_resolution
 
+            if self.verbose:
+                print("The resolution prescribed is higher than "\
+                      "the raw data set resolution. Resolution is set "\
+                      "to raw resolution.")
+                
+        # don't use SPD if DD can be used with full resolution
+        if (
+            max_resolution == self.data_collection_resolution
+            and self.download_method == "SPD"
+        ):
+            self.download_method = "DD"
+
+            if self.verbose:
+                print(
+                    "Split and Merge Download (SPD) is not needed to reach "\
+                    "the maximum data resolution. Switching to Direct "\
+                    "Download (DD)."
+                )
+
+        return None
+    
     def get_optimal_box_split(self):
 
         self.convert_bounding_box_coordinates()
@@ -324,12 +356,12 @@ class EarthSpy:
 
         if not evaluation_script:
 
-            if self.data_collection_str == "SENTINEL2_L2A":
+            if self.satellite == "SENTINEL2":
                 self.get_evaluation_script_from_link(
                     "https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/"
                     + "true_color/script.js"
                 )
-            elif self.data_collection_str == "S1":
+            elif self.satellite == "SENTINEL1":
                 self.get_evaluation_script_from_link(
                     "https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/"
                     + "sar_rvi_temporal_analysis/script.js"
@@ -455,8 +487,4 @@ class EarthSpy:
             print("--- End time: %s ---" % end_local_time)
 
     def create_png_visuals(self):
-
-        for file in self.output_filenames:
-
-            # TODO
-            c = False
+        return None
