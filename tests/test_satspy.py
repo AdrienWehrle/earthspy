@@ -6,4 +6,4 @@
 
 """
 
-import satspy as ss
+import earthspy as es
