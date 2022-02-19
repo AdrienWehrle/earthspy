@@ -3,14 +3,6 @@
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
-TODO:
-  - comment code properly
-  - generate documentation
-  - add tests
-  - write NRT wrapper
-  - add simple visualisations so rasters don't have to be loaded for
-    very superficial checks
-
 """
 
 from datetime import datetime, timedelta
