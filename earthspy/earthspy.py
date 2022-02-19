@@ -24,16 +24,14 @@ import validators
 
 
 class EarthSpy:
-    """Monitor and study any place on Earth and in Near Real-Time 
-    (NRT) using the SentinelHub services.
-
+    """Monitor and study any place on Earth and in Near Real-Time (NRT) using the
+    SentinelHub services.
     """
 
     def __init__(self, CLIENT_credentials_file: str) -> None:
         """
-        :param CLIENT_credentials_file: full path to file
-          containing credentials with User's OAuth client ID
-          (1st row) secrect (2nd row).
+        :param CLIENT_credentials_file: full path to file containing credentials
+          with User's OAuth client ID (1st row) secrect (2nd row).
         :type CLIENT_credentials_file: str
         """
         with open(CLIENT_credentials_file, "r") as file:
@@ -47,11 +45,9 @@ class EarthSpy:
         return None
 
     def configure_connection(self) -> shb.SHConfig:
-        """Build a shb configuration class for the
-        connection to Sentinel Hub services.
+        """Build a shb configuration class for the connection to Sentinel Hub services.
 
-        :return: sentinelhub-py package configuration
-          class.
+        :return: sentinelhub-py package configuration class.
         :rtype: shb.SHConfig
         """
         self.config = shb.SHConfig()
@@ -73,66 +69,53 @@ class EarthSpy:
         download_mode: str = "SM",
         verbose: bool = True,
     ) -> None:
-        """Define a set of parameters used for the
-        API request.
-        
-        :param bounding_box: Area footprint with the 
-          format [min_x, min_y, max_x, max_y]. An area
-          name stored in a JSON database can also be 
+        """Define a set of parameters used for the API request.
+
+        :param bounding_box: Area footprint with the format [min_x, min_y,
+          max_x, max_y]. An area name stored in a JSON database can also be
           passed.
         :type bounding_box: Union[list, str]
 
-        :param time_interval: Number of days from 
-          present date or beginning and end date 
-          strings.
+        :param time_interval: Number of days from present date or beginning and
+          end date strings.
         :type time_interval: Union[int, tuple]
 
-        :param evaluation_script: Custom script 
-          (preferably evalscript V3) or URL to
-          a custom script on https://custom\
-          -scripts.sentinel-hub.com/. If not 
-          specified, a default script is used.
+        :param evaluation_script: Custom script (preferably evalscript V3) or
+          URL to a custom script on https://custom-scripts.sentinel-hub.com/. If
+          not specified, a default script is used.
         :type evaluation_script: str
 
-        :param data_collection: Data collection name
-          as listed at https://sentinelhub-py.\
-          readthedocs.io/en/latest/examples/\
-          data_collections.html
+        :param data_collection: Data collection name as listed at
+          https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html
         :type data_collection: str
 
-        :param resolution: Resolution in meters to use 
-          for data download, defaults to None. If not 
-          specified, the raw data collection resolution 
+        :param resolution: Resolution in meters to use for data download,
+          defaults to None. If not specified, the raw data collection resolution
           is used.
         :type resolution: Union[None, int], optional
 
-        :param store_folder: Local path to folder where 
-          data will be store, defaults to None. If not
-          specified, path set to local ~/Downloads/earthspy.
+        :param store_folder: Local path to folder where data will be store,
+          defaults to None. If not specified, path set to local
+          ~/Downloads/earthspy.
         :type store_folder: Union[None, str], optional
 
-        :param multiprocessing: Whether or not to download 
-          in multiprocessing, defaults to True.
+        :param multiprocessing: Whether or not to download in multiprocessing,
+          defaults to True.
         :type multiprocessing: bool, optional
 
-        :param nb_cores: Number of cores to use in 
-          multiprocessing, defaults to None. If not 
-          specified, set to the number of cores available 
-          minus 2 (to avoid CPU overload).
+        :param nb_cores: Number of cores to use in multiprocessing, defaults to
+          None. If not specified, set to the number of cores available minus 2
+          (to avoid CPU overload).
         :type nb_cores: Union[None, int], optional
 
-        :param download_mode: Whether to perform a 
-          Direct (D) or Split and Merge (SM) download, 
-          defaults to "SM". D uses the maximum
-          resolution achievable keeping the 2500*2500 
-          pixels maximum size set by Sentinel Hub
-          services. SM breaks the initial area in as 
-          many bounding boxes needed to achieve 
-          specified (or raw) resolution.
+        :param download_mode: Whether to perform a Direct (D) or Split and Merge
+          (SM) download, defaults to "SM". D uses the maximum resolution
+          achievable keeping the 2500*2500 pixels maximum size set by Sentinel
+          Hub services. SM breaks the initial area in as many bounding boxes
+          needed to achieve specified (or raw) resolution.
         :type download_mode: str, optional
 
-        :param verbose: Whether to print processing 
-          status, defaults to True.
+        :param verbose: Whether to print processing status, defaults to True.
         :type verbose: bool, optional
         """
 
@@ -163,19 +146,19 @@ class EarthSpy:
         self.get_store_folder(store_folder)
 
         if download_mode == "D":
-            self.split_boxes = [
-                shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)
-            ]
+            self.split_boxes = [shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)]
         elif download_mode == "SM":
             self.get_split_boxes()
 
         return None
 
-    def get_data_collection(self):
-        """_summary_
+    def get_data_collection(self) -> shb.DataCollection:
+        """Get Sentinel Hub DataCollection object from data collection name.
 
-        :return: _description_
-        :rtype: _type_
+
+        :return: DataCollection object containing all information needed for
+          download (such as bands, sensor type...).
+        :rtype: shb.DataCollection
         """
         self.data_collection = shb.DataCollection[self.data_collection_str]
 
@@ -217,15 +200,12 @@ class EarthSpy:
         return self.data_collection_resolution
 
     def set_number_of_cores(self, nb_cores: Union[None, int]) -> int:
-        """Set number of cores depending on 
-        user specifications.
+        """Set number of cores depending on user specifications.
 
-        :param nb_cores: Number of cores to use
-          in multiprocessing. 
+        :param nb_cores: Number of cores to use in multiprocessing.
         :type nb_cores: Union[None, int]
-        
-        :return: Number of cores to use
-          in multiprocessing.
+
+        :return: Number of cores to use in multiprocessing.
         :rtype: int
         """
         if not nb_cores:
@@ -239,12 +219,10 @@ class EarthSpy:
     def get_date_range(
         self, time_interval: Union[int, list]
     ) -> pd.core.indexes.datetimes.DatetimeIndex:
-        """Get date range for data download
-        depending on user specifications.
+        """Get date range for data download depending on user specifications.
 
-        :param time_interval: Number of days from 
-          present date or beginning and end date 
-          strings.
+        :param time_interval: Number of days from present date or beginning and
+          end date strings.
         :type time_interval: Union[int, list]
 
         :return: Data range (can be one-day long).
@@ -253,21 +231,17 @@ class EarthSpy:
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
-            nb_days_back = (
-                datetime.today() - timedelta(days=time_interval)
-            ).strftime("%Y-%m-%d")
+            nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
+                "%Y-%m-%d"
+            )
             self.date_range = pd.date_range(nb_days_back, today)
 
         elif isinstance(time_interval, list):
 
             if len(time_interval) > 1:
-                self.date_range = pd.date_range(
-                    time_interval[0], time_interval[1]
-                )
+                self.date_range = pd.date_range(time_interval[0], time_interval[1])
             else:
-                self.date_range = pd.date_range(
-                    time_interval[0], time_interval[0]
-                )
+                self.date_range = pd.date_range(time_interval[0], time_interval[0])
 
         elif isinstance(time_interval, str):
             self.date_range = pd.date_range(time_interval, time_interval)
@@ -275,19 +249,15 @@ class EarthSpy:
         return self.date_range
 
     def get_bounding_box(self, bounding_box: Union[list, str]) -> list:
-        """Get bounding box for data download
-        depending on user specifications.
+        """Get bounding box for data download depending on user specifications.
 
-        :param bounding_box: Area footprint with the 
-          format [min_x, min_y, max_x, max_y]. An area
-          name stored in a JSON database can also be 
+        :param bounding_box: Area footprint with the format [min_x, min_y,
+          max_x, max_y]. An area name stored in a JSON database can also be
           passed.
         :type bounding_box: Union[list, str]
 
-        :return: Area footprint with the 
-          format [min_x, min_y, max_x, max_y]. An area
-          name stored in a JSON database can also be 
-          passed.
+        :return: Area footprint with the format [min_x, min_y, max_x, max_y]. An
+          area name stored in a JSON database can also be passed.
         :rtype: list
         """
         if isinstance(bounding_box, list):
@@ -296,9 +266,7 @@ class EarthSpy:
 
         elif isinstance(bounding_box, str):
 
-            area_bounding_boxes = pd.read_csv(
-                "./area_bounding_boxes.csv", index_col=1
-            )
+            area_bounding_boxes = pd.read_csv("./area_bounding_boxes.csv", index_col=1)
 
             self.bounding_box = area_bounding_boxes[bounding_box]
             self.crs = area_bounding_boxes["crs"]
@@ -306,16 +274,14 @@ class EarthSpy:
         return self.bounding_box
 
     def get_store_folder(self, store_folder: str) -> str:
-        """Get folder path for data storage
-        depending on user specifications.
+        """Get folder path for data storage depending on user specifications.
 
-        :param store_folder: Local path to folder where 
-          data will be store, defaults to None. If not
-          specified, path set to local ~/Downloads/earthspy.
+        :param store_folder: Local path to folder where data will be store,
+          defaults to None. If not specified, path set to local
+          ~/Downloads/earthspy.
         :type store_folder: str
 
-        :return: Local path to folder where 
-          data will be store.
+        :return: Local path to folder where data will be store.
         :rtype: str
         """
         if store_folder is None:
@@ -340,13 +306,11 @@ class EarthSpy:
         return self.store_folder
 
     def convert_bounding_box_coordinates(self) -> list:
-        """Convert bounding boxe coordinates
-        to a Geodetic Parameter Dataset (EPSG)
-        in meter unit, default to EPSG:3413
-        (NSIDC Sea Ice Polar Stereographic North).
+        """Convert bounding boxe coordinates to a Geodetic Parameter Dataset (EPSG) in
+        meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
+        North).
 
-        :return: Bounding box coordinates in target
-          projection.
+        :return: Bounding box coordinates in target projection.
         :rtype: list
         """
         trf = pyproj.Transformer.from_crs(
@@ -373,14 +337,11 @@ class EarthSpy:
         return self.bounding_box_meters
 
     def get_max_resolution(self) -> Union[int, None]:
-        """Get maximum resolution reachable
-        in Direct Download mode.
+        """Get maximum resolution reachable in Direct Download mode.
 
-        :raises IndexError: Estimated resolution
-          above 10 kilometers.
+        :raises IndexError: Estimated resolution above 10 kilometers.
 
-        :return: Resolution in meters to use 
-          for data download.
+        :return: Resolution in meters to use for data download.
         :rtype: Union[int, None]
         """
         self.convert_bounding_box_coordinates()
@@ -402,20 +363,11 @@ class EarthSpy:
 
         except IndexError:
 
-            if (
-                np.sum(nb_xpixels < 2500) == 0
-                and np.sum(nb_ypixels < 2500) == 0
-            ):
+            if np.sum(nb_xpixels < 2500) == 0 and np.sum(nb_ypixels < 2500) == 0:
                 origin = "x and y"
-            elif (
-                np.sum(nb_xpixels < 2500) == 0
-                and np.sum(nb_ypixels < 2500) != 0
-            ):
+            elif np.sum(nb_xpixels < 2500) == 0 and np.sum(nb_ypixels < 2500) != 0:
                 origin = "x"
-            elif (
-                np.sum(nb_xpixels < 2500) != 0
-                and np.sum(nb_ypixels < 2500) == 0
-            ):
+            elif np.sum(nb_xpixels < 2500) != 0 and np.sum(nb_ypixels < 2500) == 0:
                 origin = "y"
 
             raise IndexError(
@@ -428,12 +380,10 @@ class EarthSpy:
         return max_resolution
 
     def set_correct_resolution(self) -> int:
-        """Set download resolution based on
-        a combination of download mode and 
-        user specifications.
+        """Set download resolution based on a combination of download mode and user
+        specifications.
 
-        :return: Resolution in meters to use 
-          for data download.
+        :return: Resolution in meters to use for data download.
         :rtype: int
         """
         # get maximum resolution that can be used in D
@@ -487,11 +437,11 @@ class EarthSpy:
         return self.resolution
 
     def get_optimal_box_split(self) -> Tuple[int, int]:
-        """Get the minimum number of bounding boxes to 
-        achieve maximum resolution in SM download mode.
+        """Get the minimum number of bounding boxes to achieve maximum resolution in SM
+        download mode.
 
-        :return: Minimum number of boxes in x and y
-          directions (1st and 2nd values, respectively).
+        :return: Minimum number of boxes in x and y directions (1st and 2nd
+          values, respectively).
         :rtype: Tuple[int, int]
         """
         self.convert_bounding_box_coordinates()
@@ -501,28 +451,19 @@ class EarthSpy:
 
         trial_split_boxes = np.arange(2, 100)
 
-        boxes_pixels_x = (
-            dx / trial_split_boxes
-        ) / self.data_collection_resolution
-        boxes_pixels_y = (
-            dy / trial_split_boxes
-        ) / self.data_collection_resolution
+        boxes_pixels_x = (dx / trial_split_boxes) / self.data_collection_resolution
+        boxes_pixels_y = (dy / trial_split_boxes) / self.data_collection_resolution
 
-        min_nb_boxes_x = int(
-            trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]]
-        )
-        min_nb_boxes_y = int(
-            trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]]
-        )
+        min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
+        min_nb_boxes_y = int(trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]])
 
         return min_nb_boxes_x, min_nb_boxes_y
 
     def get_split_boxes(self) -> list:
-        """Build secondary bounding boxes used 
-        for the SM download mode.
+        """Build secondary bounding boxes used for the SM download mode.
 
-        :return: Secondary bounding boxes matching
-          the initial bounding box when merged.
+        :return: Secondary bounding boxes matching the initial bounding box when
+          merged.
         :rtype: list
         """
         nb_boxes_x, nb_boxes_y = self.get_optimal_box_split()
@@ -555,12 +496,11 @@ class EarthSpy:
     def get_evaluation_script_from_link(
         self, evaluation_script: Union[None, str]
     ) -> str:
-        """Get evaluation script from URL pointing
-        to the Sentinel Hub collection of custom scripts.
+        """Get evaluation script from URL pointing to the Sentinel Hub collection of
+        custom scripts.
 
-        :param evaluation_script: URL to
-          a custom script on https://custom\
-          -scripts.sentinel-hub.com/.
+        :param evaluation_script: URL to a custom script on
+          https://custom-scripts.sentinel-hub.com/.
         :type evaluation_script: Union[None, str]
 
         :return: Custom script.
@@ -570,17 +510,12 @@ class EarthSpy:
 
         return self.evaluation_script
 
-    def get_evaluation_script(
-        self, evaluation_script: Union[None, str]
-    ) -> str:
-        """Get custom script for data download 
-        depending on user specifications.
+    def get_evaluation_script(self, evaluation_script: Union[None, str]) -> str:
+        """Get custom script for data download depending on user specifications.
 
-        :param evaluation_script: Custom script 
-          (preferably evalscript V3) or URL to
-          a custom script on https://custom\
-          -scripts.sentinel-hub.com/. If not 
-          specified, a default script is used.
+        :param evaluation_script: Custom script (preferably evalscript V3) or
+          URL to a custom script on https://custom-scripts.sentinel-hub.com/. If
+          not specified, a default script is used.
         :type evaluation_script: Union[None, str]
 
         :return: Custom script.
@@ -616,7 +551,7 @@ class EarthSpy:
     ) -> Tuple[str, list]:
         """Send the Sentinel Hub API request.
 
-        :param date: Date to process. 
+        :param date: Date to process.
         :type date: pd._libs.tslibs.timestamps.Timestamp
 
         :return: The associated date string and outputs.
@@ -626,9 +561,7 @@ class EarthSpy:
 
         for loc_bbox in self.split_boxes:
 
-            loc_size = shb.bbox_to_dimensions(
-                loc_bbox, resolution=self.resolution
-            )
+            loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
 
             request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
@@ -668,13 +601,10 @@ class EarthSpy:
         return date_string, outputs
 
     def rename_output_files(self) -> None:
-        """Reorganise the default folder structure
-        and file naming of Sentinel Hub services.
-        Files are renamed using the acquisition
-        date and the data collection. If download
-        in SM mode, then the different rasters
-        with the same date are numbered after
-        the acquisition date.
+        """Reorganise the default folder structure and file naming of Sentinel Hub
+        services.  Files are renamed using the acquisition date and the data
+        collection. If download in SM mode, then the different rasters with the
+        same date are numbered after the acquisition date.
         """
         folders = glob.glob(f"{self.store_folder}/*")
 
@@ -685,14 +615,13 @@ class EarthSpy:
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
 
-            date = request["payload"]["input"]["data"][0]["dataFilter"][
-                "timeRange"
-            ]["from"][:10]
+            date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
+                "from"
+            ][:10]
 
             if self.download_mode == "D":
                 new_filename = (
-                    f"{self.store_folder}/"
-                    + "{date}_{self.data_collection_str}.tif"
+                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
             elif self.download_mode == "SM":
                 new_filename = (
@@ -712,9 +641,8 @@ class EarthSpy:
         return None
 
     def send_sentinelhub_requests(self) -> None:
-        """Send the Sentinel Hub API request depending
-        on user specifications (mainly download mode 
-        and multiprocessing).
+        """Send the Sentinel Hub API request depending on user specifications (mainly
+        download mode and multiprocessing).
         """
         if self.verbose:
             start_time = time.time()
@@ -728,15 +656,11 @@ class EarthSpy:
             self.outputs = {}
 
             with Pool(self.nb_cores) as p:
-                for date, output in p.map(
-                    self.sentinelhub_request, self.date_range
-                ):
+                for date, output in p.map(self.sentinelhub_request, self.date_range):
                     self.outputs[date] = output
 
         else:
-            self.outputs = [
-                self.sentinelhub_request(date) for date in self.date_range
-            ]
+            self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
 
         self.rename_output_files()
 
@@ -754,10 +678,9 @@ class EarthSpy:
         return None
 
     def merge_rasters(self) -> None:
-        """Merge raster files downloaded in
-        SM download mode using GDAL merge capability.
-        A "mosaic" code is added to the name of the file 
-        in which the different rasters have been merged. 
+        """Merge raster files downloaded in SM download mode using GDAL merge
+        capability.  A "mosaic" code is added to the name of the file in which
+        the different rasters have been merged.
         """
         output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
         output_filename = output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
