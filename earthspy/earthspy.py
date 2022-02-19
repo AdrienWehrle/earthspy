@@ -81,40 +81,58 @@ class EarthSpy:
           name stored in a JSON database can also be 
           passed.
         :type bounding_box: Union[list, str]
+
         :param time_interval: Number of days from 
           present date or beginning and end date 
           strings.
         :type time_interval: Union[int, tuple]
+
         :param evaluation_script: Custom script 
           (preferably evalscript V3) or URL to
           a custom script on https://custom\
           -scripts.sentinel-hub.com/.
         :type evaluation_script: str
+
         :param data_collection: Data collection name
           as listed at https://sentinelhub-py.\
           readthedocs.io/en/latest/examples/\
           data_collections.html
         :type data_collection: str
+
         :param resolution: Resolution in meters to use 
           for data download, defaults to None. If not 
           specified, the raw data collection resolution 
           is used.
         :type resolution: Union[None, int], optional
+
         :param store_folder: Local path to folder where 
           data will be store, defaults to None. If not
           specified, path set to local ~/Downloads/earthspy.
         :type store_folder: Union[None, str], optional
+
         :param multiprocessing: Whether or not to download 
           in multiprocessing, defaults to True.
         :type multiprocessing: bool, optional
-        :param nb_cores: , defaults to None
+
+        :param nb_cores: Number of cores to use in 
+          multiprocessing, defaults to None. If not 
+          specified, set to the number of cores available 
+          minus 2 (to avoid CPU overload).
         :type nb_cores: Union[None, int], optional
-        :param download_method: _description_, defaults to "SM"
+
+        :param download_method: Whether to perform a 
+          Direct (D) or Split and Merge (SM) download, 
+          defaults to "SM". D uses the maximum
+          resolution achievable keeping the 2500*2500 
+          pixels maximum size set by Sentinel Hub
+          services. SM breaks the initial area in as 
+          many bounding boxes needed to achieve 
+          specified (or raw) resolution.
         :type download_method: str, optional
-        :param verbose: _description_, defaults to True
+
+        :param verbose: Whether to print processing 
+          status, defaults to True.
         :type verbose: bool, optional
-        :return: _description_
-        :rtype: _type_
         """
 
         self.multiprocessing = multiprocessing
@@ -144,7 +162,8 @@ class EarthSpy:
         self.get_store_folder(store_folder)
 
         if download_method == "D":
-            self.split_boxes = [shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)]
+            self.split_boxes = [shb.BBox(bbox=self.bounding_box,
+                                         crs=shb.CRS.WGS84)]
         elif download_method == "SM":
             self.get_split_boxes()
 
@@ -160,21 +179,22 @@ class EarthSpy:
 
         return self.data_collection
 
-    def get_satellite_name(self):
-        """_summary_
+    def get_satellite_name(self) -> str:
+        """Extract satellite name from data
+        collection.
 
-        :return: _description_
-        :rtype: _type_
+        :return: Satellite name.
+        :rtype: str
         """
         self.satellite = self.data_collection_str.split("_")[0]
 
         return self.satellite
 
-    def get_data_collection_resolution(self):
-        """_summary_
+    def get_data_collection_resolution(self) -> int:
+        """Get raw data collection resolution.
 
-        :return: _description_
-        :rtype: _type_
+        :return: Data collection resolution.
+        :rtype: int
         """
         if self.satellite == "SENTINEL1":
             self.data_collection_resolution = 5
@@ -193,13 +213,17 @@ class EarthSpy:
 
         return self.data_collection_resolution
 
-    def set_number_of_cores(self, nb_cores: Union[None, int]):
-        """_summary_
+    def set_number_of_cores(self, nb_cores: Union[None, int]) -> int:
+        """Set number of cores depending on 
+        user specifications.
 
-        :param nb_cores: _description_
+        :param nb_cores: Number of cores to use
+          in multiprocessing. 
         :type nb_cores: Union[None, int]
-        :return: _description_
-        :rtype: _type_
+        
+        :return: Number of cores to use
+          in multiprocessing.
+        :rtype: int
         """
         if not nb_cores:
             self.nb_cores = cpu_count() - 2
@@ -212,11 +236,15 @@ class EarthSpy:
     def get_date_range(
         self, time_interval: Union[int, list]
     ) -> pd.core.indexes.datetimes.DatetimeIndex:
-        """_summary_
+        """Get date range for data download
+        depending on user specifications.
 
-        :param time_interval: _description_
+        :param time_interval: Number of days from 
+          present date or beginning and end date 
+          strings.
         :type time_interval: Union[int, list]
-        :return: _description_
+
+        :return: Data range (can be one-day long).
         :rtype: pd.core.indexes.datetimes.DatetimeIndex
         """
         if isinstance(time_interval, int):
@@ -239,12 +267,20 @@ class EarthSpy:
 
         return self.date_range
 
-    def get_bounding_box(self, bounding_box) -> list:
-        """_summary_
+    def get_bounding_box(self, bounding_box: Union[list, str]) -> list:
+        """Get bounding box for data download
+        depending on user specifications.
 
-        :param bounding_box: _description_
-        :type bounding_box: _type_
-        :return: _description_
+        :param bounding_box: Area footprint with the 
+          format [min_x, min_y, max_x, max_y]. An area
+          name stored in a JSON database can also be 
+          passed.
+        :type bounding_box: Union[list, str]
+
+        :return: Area footprint with the 
+          format [min_x, min_y, max_x, max_y]. An area
+          name stored in a JSON database can also be 
+          passed.
         :rtype: list
         """
         if isinstance(bounding_box, list):
@@ -260,12 +296,18 @@ class EarthSpy:
 
         return self.bounding_box
 
-    def get_store_folder(self, store_folder) -> str:
-        """_summary_
+    def get_store_folder(self, store_folder: str) -> str:
+        """Get folder path for data storage
+        depending on user specifications.
 
-        :param store_folder: _description_
-        :type store_folder: _type_
-        :return: _description_
+        :param store_folder: Local path to folder where 
+          data will be store, defaults to None. If not
+          specified, path set to local ~/Downloads/earthspy.
+        :type store_folder: str
+
+        :return: Local path to folder where 
+          data will be store, defaults to None. If not
+          specified, path set to local ~/Downloads/earthspy.
         :rtype: str
         """
         if store_folder is None:
