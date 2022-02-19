@@ -70,7 +70,7 @@ class EarthSpy:
         store_folder: Union[None, str] = None,
         multiprocessing: bool = True,
         nb_cores: Union[None, int] = None,
-        download_method: str = "SM",
+        download_mode: str = "SM",
         verbose: bool = True,
     ) -> None:
         """Define a set of parameters used for the
@@ -120,7 +120,7 @@ class EarthSpy:
           minus 2 (to avoid CPU overload).
         :type nb_cores: Union[None, int], optional
 
-        :param download_method: Whether to perform a 
+        :param download_mode: Whether to perform a 
           Direct (D) or Split and Merge (SM) download, 
           defaults to "SM". D uses the maximum
           resolution achievable keeping the 2500*2500 
@@ -128,7 +128,7 @@ class EarthSpy:
           services. SM breaks the initial area in as 
           many bounding boxes needed to achieve 
           specified (or raw) resolution.
-        :type download_method: str, optional
+        :type download_mode: str, optional
 
         :param verbose: Whether to print processing 
           status, defaults to True.
@@ -136,7 +136,7 @@ class EarthSpy:
         """
 
         self.multiprocessing = multiprocessing
-        self.download_method = download_method
+        self.download_mode = download_mode
         self.verbose = verbose
 
         self.data_collection_str = data_collection
@@ -161,10 +161,10 @@ class EarthSpy:
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
 
-        if download_method == "D":
+        if download_mode == "D":
             self.split_boxes = [shb.BBox(bbox=self.bounding_box,
                                          crs=shb.CRS.WGS84)]
-        elif download_method == "SM":
+        elif download_mode == "SM":
             self.get_split_boxes()
 
         return None
@@ -289,7 +289,8 @@ class EarthSpy:
 
         elif isinstance(bounding_box, str):
 
-            area_bounding_boxes = pd.read_csv("./area_bounding_boxes.csv", index_col=1)
+            area_bounding_boxes = pd.read_csv("./area_bounding_boxes.csv",
+                                              index_col=1)
 
             self.bounding_box = area_bounding_boxes[bounding_box]
             self.crs = area_bounding_boxes["crs"]
@@ -306,8 +307,7 @@ class EarthSpy:
         :type store_folder: str
 
         :return: Local path to folder where 
-          data will be store, defaults to None. If not
-          specified, path set to local ~/Downloads/earthspy.
+          data will be store.
         :rtype: str
         """
         if store_folder is None:
@@ -331,11 +331,15 @@ class EarthSpy:
 
         return self.store_folder
 
-    def convert_bounding_box_coordinates(self):
-        """_summary_
+    def convert_bounding_box_coordinates(self) -> list:
+        """Convert bounding boxe coordinates
+        to a Geodetic Parameter Dataset (EPSG)
+        in meter unit, default to EPSG:3413
+        (NSIDC Sea Ice Polar Stereographic North).
 
-        :return: _description_
-        :rtype: _type_
+        :return: Bounding box coordinates in target
+          projection.
+        :rtype: list
         """
         trf = pyproj.Transformer.from_crs(
             f"epsg:{self.crs}", "epsg:3413", always_xy=True
@@ -360,20 +364,24 @@ class EarthSpy:
 
         return self.bounding_box_meters
 
-    def get_max_resolution(self) -> None:
-        """_summary_
+    def get_max_resolution(self) -> Union[int, None]:
+        """Get maximum resolution reachable
+        in Direct Download mode.
 
-        :raises IndexError: _description_
-        :return: _description_
-        :rtype: _type_
+        :raises IndexError: Estimated resolution
+          above 10 kilometers.
+
+        :return: Resolution in meters to use 
+          for data download.
+        :rtype: Union[int, None]
         """
         self.convert_bounding_box_coordinates()
 
         # trial resolutions in meters
         trial_resolutions = np.arange(self.data_collection_resolution, 10000)
 
-        dy = np.abs(self.bounding_box_meters[2] - self.bounding_box_meters[0])
-        dx = np.abs(self.bounding_box_meters[3] - self.bounding_box_meters[1])
+        dx = np.abs(self.bounding_box_meters[2] - self.bounding_box_meters[0])
+        dy = np.abs(self.bounding_box_meters[3] - self.bounding_box_meters[1])
 
         nb_xpixels = (dx / trial_resolutions).astype(int)
         nb_ypixels = (dy / trial_resolutions).astype(int)
@@ -401,23 +409,26 @@ class EarthSpy:
 
         return max_resolution
 
-    def set_correct_resolution(self):
-        """_summary_
+    def set_correct_resolution(self) -> int:
+        """Set download resolution based on
+        a combination of download mode and 
+        user specifications.
 
-        :return: _description_
-        :rtype: _type_
+        :return: Resolution in meters to use 
+          for data download.
+        :rtype: int
         """
         # get maximum resolution that can be used in D
         max_resolution = self.get_max_resolution()
 
         # default resolutions
-        if not self.resolution and self.download_method == "D":
+        if not self.resolution and self.download_mode == "D":
             self.resolution = max_resolution
-        elif not self.resolution and self.download_method == "SM":
+        elif not self.resolution and self.download_mode == "SM":
             self.resolution = self.data_collection_resolution
 
         # limit resolution to max number of pixels if using D
-        if self.download_method == "D" and self.resolution < max_resolution:
+        if self.download_mode == "D" and self.resolution < max_resolution:
 
             self.resolution = max_resolution
 
@@ -443,9 +454,9 @@ class EarthSpy:
         # don't use SM if D can be used with full resolution
         if (
             max_resolution == self.data_collection_resolution
-            and self.download_method == "SM"
+            and self.download_mode == "SM"
         ):
-            self.download_method = "D"
+            self.download_mode = "D"
 
             if self.verbose:
                 print(
@@ -454,7 +465,7 @@ class EarthSpy:
                     "(D) download."
                 )
 
-        return None
+        return self.resolution
 
     def get_optimal_box_split(self):
         """_summary_
@@ -628,11 +639,11 @@ class EarthSpy:
                 "from"
             ][:10]
 
-            if self.download_method == "D":
+            if self.download_mode == "D":
                 new_filename = (
                     f"{self.store_folder}/{date}_{self.data_collection_str}.tif"
                 )
-            elif self.download_method == "SM":
+            elif self.download_mode == "SM":
                 new_filename = (
                     f"{self.store_folder}/{date}_{i}_{self.data_collection_str}.tif"
                 )
@@ -671,7 +682,7 @@ class EarthSpy:
 
         self.rename_output_files()
 
-        if self.download_method == "SM":
+        if self.download_mode == "SM":
             self.merge_rasters()
 
         if self.verbose:
