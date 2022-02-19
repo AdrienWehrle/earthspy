@@ -32,17 +32,15 @@ import validators
 
 
 class EarthSpy:
-    """_summary_
     """
+    Download satellite data through the Sentinelhub services
+    with a variety of different possible options and settings.
 
+    Attributes:
+        
+    """
     def __init__(self, CLIENT_credentials_file: str) -> None:
-        """_summary_
 
-        :param CLIENT_credentials_file: _description_
-        :type CLIENT_credentials_file: str
-        :return: _description_
-        :rtype: _type_
-        """
         with open(CLIENT_credentials_file, "r") as file:
             credentials = file.read().splitlines()
 
@@ -54,11 +52,7 @@ class EarthSpy:
         return None
 
     def configure_connection(self) -> shb.SHConfig:
-        """_summary_
 
-        :return: _description_
-        :rtype: shb.SHConfig
-        """
         self.config = shb.SHConfig()
         self.config.sh_client_id = self.CLIENT_ID
         self.config.sh_client_secret = self.CLIENT_SECRET
@@ -78,31 +72,6 @@ class EarthSpy:
         download_method: str = "SM",
         verbose: bool = True,
     ) -> None:
-        """_summary_
-
-        :param bounding_box: _description_
-        :type bounding_box: Union[list, str]
-        :param time_interval: _description_
-        :type time_interval: Union[int, tuple]
-        :param evaluation_script: _description_
-        :type evaluation_script: str
-        :param data_collection: _description_
-        :type data_collection: str
-        :param resolution: _description_, defaults to None
-        :type resolution: Union[int, None], optional
-        :param store_folder: _description_, defaults to None
-        :type store_folder: Union[str, None], optional
-        :param multiprocessing: _description_, defaults to True
-        :type multiprocessing: bool, optional
-        :param nb_cores: _description_, defaults to None
-        :type nb_cores: Union[int, None], optional
-        :param download_method: _description_, defaults to "SM"
-        :type download_method: str, optional
-        :param verbose: _description_, defaults to True
-        :type verbose: bool, optional
-        :return: _description_
-        :rtype: _type_
-        """
 
         self.multiprocessing = multiprocessing
         self.download_method = download_method
@@ -138,31 +107,19 @@ class EarthSpy:
         return None
 
     def get_data_collection(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         self.data_collection = shb.DataCollection[self.data_collection_str]
 
         return self.data_collection
 
     def get_satellite_name(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         self.satellite = self.data_collection_str.split("_")[0]
 
         return self.satellite
 
     def get_data_collection_resolution(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         if self.satellite == "SENTINEL1":
             self.data_collection_resolution = 5
         elif self.satellite == "SENTINEL2":
@@ -181,13 +138,7 @@ class EarthSpy:
         return self.data_collection_resolution
 
     def set_number_of_cores(self, nb_cores: Union[None, int]):
-        """_summary_
 
-        :param nb_cores: _description_
-        :type nb_cores: Union[None, int]
-        :return: _description_
-        :rtype: _type_
-        """
         if not nb_cores:
             self.nb_cores = cpu_count() - 2
 
@@ -199,13 +150,7 @@ class EarthSpy:
     def get_date_range(
         self, time_interval: Union[int, list]
     ) -> pd.core.indexes.datetimes.DatetimeIndex:
-        """_summary_
 
-        :param time_interval: _description_
-        :type time_interval: Union[int, list]
-        :return: _description_
-        :rtype: pd.core.indexes.datetimes.DatetimeIndex
-        """
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
@@ -227,13 +172,7 @@ class EarthSpy:
         return self.date_range
 
     def get_bounding_box(self, bounding_box) -> list:
-        """_summary_
 
-        :param bounding_box: _description_
-        :type bounding_box: _type_
-        :return: _description_
-        :rtype: list
-        """
         if isinstance(bounding_box, list):
             self.bounding_box = bounding_box
             self.crs = "4326"
@@ -248,13 +187,7 @@ class EarthSpy:
         return self.bounding_box
 
     def get_store_folder(self, store_folder) -> str:
-        """_summary_
 
-        :param store_folder: _description_
-        :type store_folder: _type_
-        :return: _description_
-        :rtype: str
-        """
         if store_folder is None:
             store_folder = f"/home/{os.getlogin()}/Downloads"
 
@@ -277,11 +210,7 @@ class EarthSpy:
         return self.store_folder
 
     def convert_bounding_box_coordinates(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         trf = pyproj.Transformer.from_crs(
             f"epsg:{self.crs}", "epsg:3413", always_xy=True
         )
@@ -306,12 +235,7 @@ class EarthSpy:
         return self.bounding_box_meters
 
     def get_max_resolution(self) -> None:
-        """_summary_
 
-        :raises IndexError: _description_
-        :return: _description_
-        :rtype: _type_
-        """
         self.convert_bounding_box_coordinates()
 
         # trial resolutions in meters
@@ -347,11 +271,7 @@ class EarthSpy:
         return max_resolution
 
     def set_correct_resolution(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         # get maximum resolution that can be used in D
         max_resolution = self.get_max_resolution()
 
@@ -402,11 +322,7 @@ class EarthSpy:
         return None
 
     def get_optimal_box_split(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         self.convert_bounding_box_coordinates()
 
         dx = np.abs(self.bounding_box_meters[2] - self.bounding_box_meters[0])
@@ -423,11 +339,7 @@ class EarthSpy:
         return min_nb_boxes_x, min_nb_boxes_y
 
     def get_split_boxes(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         nb_boxes_x, nb_boxes_y = self.get_optimal_box_split()
 
         if self.verbose:
@@ -457,25 +369,13 @@ class EarthSpy:
     def get_evaluation_script_from_link(
         self, evaluation_script: Union[None, str]
     ) -> None:
-        """_summary_
 
-        :param evaluation_script: _description_
-        :type evaluation_script: Union[None, str]
-        :return: _description_
-        :rtype: _type_
-        """
         self.evaluation_script = requests.get(evaluation_script).text
 
         return self.evaluation_script
 
     def get_evaluation_script(self, evaluation_script: Union[None, str]) -> None:
-        """_summary_
 
-        :param evaluation_script: _description_
-        :type evaluation_script: Union[None, str]
-        :return: _description_
-        :rtype: _type_
-        """
         if not evaluation_script:
 
             if self.satellite == "SENTINEL2":
@@ -504,13 +404,7 @@ class EarthSpy:
     def sentinelhub_request(
         self, date: pd._libs.tslibs.timestamps.Timestamp
     ) -> Tuple[str, list]:
-        """_summary_
 
-        :param date: _description_
-        :type date: pd._libs.tslibs.timestamps.Timestamp
-        :return: _description_
-        :rtype: Tuple[str, list]
-        """
         date_string = date.strftime("%Y-%m-%d")
 
         for loc_bbox in self.split_boxes:
@@ -555,11 +449,7 @@ class EarthSpy:
         return date_string, outputs
 
     def rename_output_files(self) -> None:
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         folders = glob.glob(f"{self.store_folder}/*")
 
         self.output_filenames = []
@@ -594,8 +484,7 @@ class EarthSpy:
         return None
 
     def send_sentinelhub_requests(self) -> None:
-        """_summary_
-        """
+
         if self.verbose:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
@@ -628,11 +517,7 @@ class EarthSpy:
             print("--- End time: %s ---" % end_local_time)
 
     def merge_rasters(self):
-        """_summary_
 
-        :return: _description_
-        :rtype: _type_
-        """
         output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
         output_filename = output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
 
@@ -648,9 +533,4 @@ class EarthSpy:
         return None
 
     def create_png_visuals(self):
-        """_summary_
-
-        :return: _description_
-        :rtype: _type_
-        """
         return None
