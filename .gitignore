@@ -1,3 +1,4 @@
 *.py~
+*.py#
 *flycheck*
 auth.txt
