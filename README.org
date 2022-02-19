@@ -1,5 +1,5 @@
 [[https://www.gnu.org/licenses/gpl-3.0][https://img.shields.io/badge/License-GPLv3-blue.svg]]
-[[https://github.com/AdrienWehrle/earthspy/actions][file:https://github.com/AdrienWehrle/earthspy/workflows/lint_python/badge.svg]]
+[[https://github.com/AdrienWehrle/earthspy/actions][file:https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg]]
 
 * earthspy
 
