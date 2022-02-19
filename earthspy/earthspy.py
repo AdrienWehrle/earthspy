@@ -498,7 +498,7 @@ class EarthSpy:
           the initial bounding box when merged.
         :rtype: list
         """
-        nb_boxes_x, nb_boxes_y = self.get_optimal_box_split()
+        nb_boxes_x, nb_boxes_y=self.get_optimal_box_split()
 
         if self.verbose:
             print(
