@@ -64,8 +64,8 @@ class EarthSpy:
         self,
         bounding_box: Union[list, str],
         time_interval: Union[int, tuple],
-        evaluation_script: str,
         data_collection: str,
+        evaluation_script: Union[None, str] = None,
         resolution: Union[None, int] = None,
         store_folder: Union[None, str] = None,
         multiprocessing: bool = True,
@@ -90,7 +90,8 @@ class EarthSpy:
         :param evaluation_script: Custom script 
           (preferably evalscript V3) or URL to
           a custom script on https://custom\
-          -scripts.sentinel-hub.com/.
+          -scripts.sentinel-hub.com/. If not 
+          specified, a default script is used.
         :type evaluation_script: str
 
         :param data_collection: Data collection name
@@ -208,8 +209,9 @@ class EarthSpy:
 
             if self.verbose:
                 print(
-                    "Satellite resolution not implemented yet. Data collection "
-                    "resolution is set to 1km and will be refined."
+                    "Satellite resolution not implemented yet. Data "
+                    "collection resolution is set to 1km and will "
+                    "be refined."
                 )
 
         return self.data_collection_resolution
@@ -417,7 +419,8 @@ class EarthSpy:
                 origin = "y"
 
             raise IndexError(
-                f"Calculated resolution above 10km forced by {origin} dimension(s). "
+                "Calculated resolution above 10km "
+                f"forced by {origin} dimension(s). "
                 "Consider narrowing down the study area."
             )
             return None
@@ -449,9 +452,10 @@ class EarthSpy:
 
             if self.verbose:
                 print(
-                    "The resolution entered is too high for a Direct Download (D) "
-                    "and has been set to the maximum resolution achievable with D. "
-                    "Consider using the Split and Merge Download (SM) to always attain "
+                    "The resolution entered is too high for a Direct "
+                    "Download (D) and has been set to the maximum "
+                    "resolution achievable with D. Consider using "
+                    "the Split and Merge Download (SM) to always attain "
                     "the highest resolution independently of the area."
                 )
 
@@ -550,13 +554,17 @@ class EarthSpy:
 
     def get_evaluation_script_from_link(
         self, evaluation_script: Union[None, str]
-    ) -> None:
-        """_summary_
+    ) -> str:
+        """Get evaluation script from URL pointing
+        to the Sentinel Hub collection of custom scripts.
 
-        :param evaluation_script: _description_
+        :param evaluation_script: URL to
+          a custom script on https://custom\
+          -scripts.sentinel-hub.com/.
         :type evaluation_script: Union[None, str]
-        :return: _description_
-        :rtype: _type_
+
+        :return: Custom script.
+        :rtype: str
         """
         self.evaluation_script = requests.get(evaluation_script).text
 
@@ -564,25 +572,31 @@ class EarthSpy:
 
     def get_evaluation_script(
         self, evaluation_script: Union[None, str]
-    ) -> None:
-        """_summary_
+    ) -> str:
+        """Get custom script for data download 
+        depending on user specifications.
 
-        :param evaluation_script: _description_
+        :param evaluation_script: Custom script 
+          (preferably evalscript V3) or URL to
+          a custom script on https://custom\
+          -scripts.sentinel-hub.com/. If not 
+          specified, a default script is used.
         :type evaluation_script: Union[None, str]
-        :return: _description_
-        :rtype: _type_
+
+        :return: Custom script.
+        :rtype: str
         """
-        if not evaluation_script:
+        if evaluation_script is None:
 
             if self.satellite == "SENTINEL2":
                 self.get_evaluation_script_from_link(
-                    "https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/"
-                    + "true_color/script.js"
+                    "https://custom-scripts.sentinel-hub.com/custom-scripts/"
+                    + "sentinel-2/true_color/script.js"
                 )
             elif self.satellite == "SENTINEL1":
                 self.get_evaluation_script_from_link(
-                    "https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/"
-                    + "sar_rvi_temporal_analysis/script.js"
+                    "https://custom-scripts.sentinel-hub.com/custom-scripts/"
+                    + "sentinel-1/sar_rvi_temporal_analysis/script.js"
                 )
 
         elif validators.url(evaluation_script):
@@ -600,11 +614,12 @@ class EarthSpy:
     def sentinelhub_request(
         self, date: pd._libs.tslibs.timestamps.Timestamp
     ) -> Tuple[str, list]:
-        """_summary_
+        """Send the Sentinel Hub API request.
 
-        :param date: _description_
+        :param date: Date to process. 
         :type date: pd._libs.tslibs.timestamps.Timestamp
-        :return: _description_
+
+        :return: The associated date string and outputs.
         :rtype: Tuple[str, list]
         """
         date_string = date.strftime("%Y-%m-%d")
@@ -653,10 +668,13 @@ class EarthSpy:
         return date_string, outputs
 
     def rename_output_files(self) -> None:
-        """_summary_
-
-        :return: _description_
-        :rtype: _type_
+        """Reorganise the default folder structure
+        and file naming of Sentinel Hub services.
+        Files are renamed using the acquisition
+        date and the data collection. If download
+        in SM mode, then the different rasters
+        with the same date are numbered after
+        the acquisition date.
         """
         folders = glob.glob(f"{self.store_folder}/*")
 
@@ -672,9 +690,11 @@ class EarthSpy:
             ]["from"][:10]
 
             if self.download_mode == "D":
-                new_filename = f"{self.store_folder}/{date}_{self.data_collection_str}.tif"
+                new_filename = f"{self.store_folder}/"\
+                    + "{date}_{self.data_collection_str}.tif"
             elif self.download_mode == "SM":
-                new_filename = f"{self.store_folder}/{date}_{i}_{self.data_collection_str}.tif"
+                new_filename = f"{self.store_folder}/"\
+                    + "{date}_{i}_{self.data_collection_str}.tif"
 
             os.rename(f"{folder}/response.tiff", new_filename)
 
@@ -688,7 +708,9 @@ class EarthSpy:
         return None
 
     def send_sentinelhub_requests(self) -> None:
-        """_summary_
+        """Send the Sentinel Hub API request depending
+        on user specifications (mainly download mode 
+        and multiprocessing).
         """
         if self.verbose:
             start_time = time.time()
@@ -725,11 +747,13 @@ class EarthSpy:
             print("--- Start time: %s ---" % start_local_time)
             print("--- End time: %s ---" % end_local_time)
 
-    def merge_rasters(self):
-        """_summary_
+        return None
 
-        :return: _description_
-        :rtype: _type_
+    def merge_rasters(self) -> None:
+        """Merge raster files downloaded in
+        SM download mode using GDAL merge capability.
+        A "mosaic" code is added to the name of the file 
+        in which the different rasters have been merged. 
         """
         output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
         output_filename = output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
@@ -743,12 +767,4 @@ class EarthSpy:
 
         gdal_merge.main(parameters)
 
-        return None
-
-    def create_png_visuals(self):
-        """_summary_
-
-        :return: _description_
-        :rtype: _type_
-        """
         return None
