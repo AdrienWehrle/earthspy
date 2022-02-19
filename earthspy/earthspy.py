@@ -690,11 +690,15 @@ class EarthSpy:
             ]["from"][:10]
 
             if self.download_mode == "D":
-                new_filename = f"{self.store_folder}/"\
+                new_filename = (
+                    f"{self.store_folder}/"
                     + "{date}_{self.data_collection_str}.tif"
+                )
             elif self.download_mode == "SM":
-                new_filename = f"{self.store_folder}/"\
+                new_filename = (
+                    f"{self.store_folder}/"
                     + "{date}_{i}_{self.data_collection_str}.tif"
+                )
 
             os.rename(f"{folder}/response.tiff", new_filename)
 
