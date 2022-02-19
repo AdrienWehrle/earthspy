@@ -467,11 +467,13 @@ class EarthSpy:
 
         return self.resolution
 
-    def get_optimal_box_split(self):
-        """_summary_
+    def get_optimal_box_split(self) -> Tuple[int, int]:
+        """Get the minimum number of bounding boxes to 
+        achieve maximum resolution in SM download mode.
 
-        :return: _description_
-        :rtype: _type_
+        :return: Minimum number of boxes in x and y
+          directions (1st and 2nd values, respectively).
+        :rtype: Tuple[int, int]
         """
         self.convert_bounding_box_coordinates()
 
@@ -488,11 +490,13 @@ class EarthSpy:
 
         return min_nb_boxes_x, min_nb_boxes_y
 
-    def get_split_boxes(self):
-        """_summary_
+    def get_split_boxes(self) -> list:
+        """Build secondary bounding boxes used 
+        for the SM download mode.
 
-        :return: _description_
-        :rtype: _type_
+        :return: Secondary bounding boxes matching
+          the initial bounding box when merged.
+        :rtype: list
         """
         nb_boxes_x, nb_boxes_y = self.get_optimal_box_split()
 
