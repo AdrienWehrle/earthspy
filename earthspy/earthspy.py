@@ -24,16 +24,17 @@ import validators
 
 
 class EarthSpy:
-    """_summary_
+    """Monitor and study any place on Earth and in Near Real-Time 
+    (NRT) using the SentinelHub services.
+
     """
 
     def __init__(self, CLIENT_credentials_file: str) -> None:
-        """_summary_
-
-        :param CLIENT_credentials_file: _description_
+        """
+        :param CLIENT_credentials_file: full path to file
+          containing credentials with User's OAuth client ID
+          (1st row) secrect (2nd row).
         :type CLIENT_credentials_file: str
-        :return: _description_
-        :rtype: _type_
         """
         with open(CLIENT_credentials_file, "r") as file:
             credentials = file.read().splitlines()
@@ -46,9 +47,11 @@ class EarthSpy:
         return None
 
     def configure_connection(self) -> shb.SHConfig:
-        """_summary_
+        """Build a shb configuration class for the
+        connection to Sentinel Hub services.
 
-        :return: _description_
+        :return: sentinelhub-py package configuration
+          class.
         :rtype: shb.SHConfig
         """
         self.config = shb.SHConfig()
@@ -63,31 +66,49 @@ class EarthSpy:
         time_interval: Union[int, tuple],
         evaluation_script: str,
         data_collection: str,
-        resolution: Union[int, None] = None,
-        store_folder: Union[str, None] = None,
+        resolution: Union[None, int] = None,
+        store_folder: Union[None, str] = None,
         multiprocessing: bool = True,
-        nb_cores: Union[int, None] = None,
+        nb_cores: Union[None, int] = None,
         download_method: str = "SM",
         verbose: bool = True,
     ) -> None:
-        """_summary_
-
-        :param bounding_box: _description_
+        """Define a set of parameters used for the
+        API request.
+        
+        :param bounding_box: Area footprint with the 
+          format [min_x, min_y, max_x, max_y]. An area
+          name stored in a JSON database can also be 
+          passed.
         :type bounding_box: Union[list, str]
-        :param time_interval: _description_
+        :param time_interval: Number of days from 
+          present date or beginning and end date 
+          strings.
         :type time_interval: Union[int, tuple]
-        :param evaluation_script: _description_
+        :param evaluation_script: Custom script 
+          (preferably evalscript V3) or URL to
+          a custom script on https://custom\
+          -scripts.sentinel-hub.com/.
         :type evaluation_script: str
-        :param data_collection: _description_
+        :param data_collection: Data collection name
+          as listed at https://sentinelhub-py.\
+          readthedocs.io/en/latest/examples/\
+          data_collections.html
         :type data_collection: str
-        :param resolution: _description_, defaults to None
-        :type resolution: Union[int, None], optional
-        :param store_folder: _description_, defaults to None
-        :type store_folder: Union[str, None], optional
-        :param multiprocessing: _description_, defaults to True
+        :param resolution: Resolution in meters to use 
+          for data download, defaults to None. If not 
+          specified, the raw data collection resolution 
+          is used.
+        :type resolution: Union[None, int], optional
+        :param store_folder: Local path to folder where 
+          data will be store, defaults to None. If not
+          specified, path set to local ~/Downloads/earthspy.
+        :type store_folder: Union[None, str], optional
+        :param multiprocessing: Whether or not to download 
+          in multiprocessing, defaults to True.
         :type multiprocessing: bool, optional
-        :param nb_cores: _description_, defaults to None
-        :type nb_cores: Union[int, None], optional
+        :param nb_cores: , defaults to None
+        :type nb_cores: Union[None, int], optional
         :param download_method: _description_, defaults to "SM"
         :type download_method: str, optional
         :param verbose: _description_, defaults to True
