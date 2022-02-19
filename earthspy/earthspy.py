@@ -502,7 +502,8 @@ class EarthSpy:
 
         if self.verbose:
             print(
-                f"Initial bounding box will be split into a ({nb_boxes_x}, {nb_boxes_y}) grid"
+                f"Initial bounding box will be split into a ({nb_boxes_x}, "
+                f"{nb_boxes_y}) grid"
             )
 
         bbox = [
