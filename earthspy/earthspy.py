@@ -302,8 +302,6 @@ class EarthSpy:
             folder_name = "earthspy"
         else:
             folder_name = self.bounding_box_name
-
-        print(store_folder)
         
         full_path = f"{store_folder}/{folder_name}"
 
@@ -491,11 +489,11 @@ class EarthSpy:
             )
 
         bbox_splitter = shb.BBoxSplitter(
-            [self.bounding_box.geometry], "epsg:4326", (nb_boxes_x, nb_boxes_y)
+            [self.bounding_box_UTM.geometry], self.bounding_box_UTM.crs, (nb_boxes_x, nb_boxes_y)
         )
 
         bbox_list = bbox_splitter.get_bbox_list()
- 
+        
         self.split_boxes = bbox_list
 
         return self.split_boxes
@@ -638,7 +636,7 @@ class EarthSpy:
             elif self.download_mode == "SM":
                 new_filename = (
                     f"{self.store_folder}/"
-                    + "{date}_{i}_{self.data_collection_str}.tif"
+                    + f"{date}_{i}_{self.data_collection_str}.tif"
                 )
 
             os.rename(f"{folder}/response.tiff", new_filename)
