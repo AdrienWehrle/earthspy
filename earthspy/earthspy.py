@@ -545,19 +545,22 @@ class EarthSpy:
 
         return self.evaluation_script
 
-    def set_multiprocessing_iterator(self) -> str:
-
+    def set_processing_iterator(self) -> str:
+        
         # parallelize on acquisition dates
         if self.download_mode == 'D' or len(self.date_range) > 1:
             self.multiprocessing_strategy = 'acquistion_dates'
             self.multiprocessing_iterator = self.date_range
-            
+        
         # parallelize on split boxes
         elif self.download_mode == 'SM' and len(self.date_range) == 1:
             self.multiprocessing_strategy = 'split_boxes'
             self.multiprocessing_iterator = self.split_boxes
-
-        return self.multiprocessing_strategy, self.multiprocessing_iterator
+        else:
+            self.multiprocessing_strategy = 'sequential'
+            self.multiprocessing_iterator = None
+            
+        return self.multiprocessing_strategy
     
     def sentinelhub_request(
             self, multiprocessing_iterator: Union[pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox],
@@ -577,7 +580,8 @@ class EarthSpy:
 
         """
 
-        if self.multiprocessing_strategy == 'acquisition_dates':
+        
+        if self.multiprocessing_strategy == 'acquisition_dates' or not self.multiprocessing:
             date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
             sequential_iterator = self.split_boxes
 
@@ -587,7 +591,7 @@ class EarthSpy:
 
         for si in sequential_iterator:
 
-            if self.multiprocessing_strategy == 'acquisition_dates':
+            if self.multiprocessing_strategy == 'acquisition_dates' or not self.multiprocessing:
                 loc_bbox = si
             elif self.multiprocessing_strategy == 'split_boxes':
                 date_string = si
@@ -682,11 +686,11 @@ class EarthSpy:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
+        self.set_processing_iterator()
+        
         if self.multiprocessing:
 
             self.set_number_of_cores()
-            self.set_multiprocessing_iterator()
-
             
             # message about windows
             freeze_support()
