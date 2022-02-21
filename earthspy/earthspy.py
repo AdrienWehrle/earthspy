@@ -254,34 +254,34 @@ class EarthSpy:
 
         return self.date_range
 
-    def get_bounding_box(self, bounding_box: Union[list, str]) -> list:
+    def get_bounding_box(self, bounding_box: Union[list, str]) -> shb.geometry.BBox:
         """Get bounding box for data download depending on user specifications.
 
         :param bounding_box: Area footprint with the format [min_x, min_y,
           max_x, max_y]. An area name stored in a JSON database can also be
           passed.
-        :type bounding_box: Union[list, str]
+        :type bounding_box: sentinelhub.geometry.BBox
 
-        :return: Area footprint with the format [min_x, min_y, max_x, max_y]. An
-          area name stored in a JSON database can also be passed.
+        :return: Area footprint as a Sentinelhub BBox geometry.
         :rtype: list
         """
         if isinstance(bounding_box, list):
-            self.bounding_box = bounding_box
-            self.crs = "4326"
-
+            self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
+            self.bounding_box_name = None
+            
         elif isinstance(bounding_box, str):
 
             area_bounding_boxes = pd.read_csv(
                 "./area_bounding_boxes.csv", index_col=1
             )
-
-            self.bounding_box = area_bounding_boxes[bounding_box]
-            self.crs = area_bounding_boxes["crs"]
-
+            
+            self.bounding_box = shb.BBox(bbox=area_bounding_boxes[bounding_box],
+                                         crs=area_bounding_boxes["crs"])
+            self.bounding_box_name = bounding_box
+            
         return self.bounding_box
 
-    def get_store_folder(self, store_folder: str) -> str:
+    def get_store_folder(self, store_folder: Union[str, None]) -> str:
         """Get folder path for data storage depending on user specifications.
 
         :param store_folder: Local path to folder where data will be store,
@@ -298,12 +298,11 @@ class EarthSpy:
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
-        if isinstance(self.bounding_box, list):
+        if self.bounding_box_name is None:
             folder_name = "earthspy"
-
-        elif isinstance(self.bounding_box, str):
-            folder_name = self.bounding_box
-
+        else:
+            folder_name = self.bounding_box_name
+        
         full_path = f"{store_folder}/{folder_name}"
 
         if not os.path.exists(full_path):
@@ -313,7 +312,8 @@ class EarthSpy:
 
         return self.store_folder
 
-    def convert_bounding_box_coordinates(self) -> list:
+    def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox,
+                                                        list]:
         """Convert bounding boxe coordinates to a Geodetic Parameter Dataset (EPSG) in
         meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
         North).
@@ -321,28 +321,17 @@ class EarthSpy:
         :return: Bounding box coordinates in target projection.
         :rtype: list
         """
-        trf = pyproj.Transformer.from_crs(
-            f"epsg:{self.crs}", "epsg:3413", always_xy=True
-        )
 
-        points = [
-            pt
-            for pt in trf.itransform(
-                [
-                    (self.bounding_box[0], self.bounding_box[1]),
-                    (self.bounding_box[2], self.bounding_box[3]),
-                ]
-            )
+        self.bounding_box_UTM = shb.to_utm_bbox(self.bounding_box)
+        
+        self.bounding_box_UTM_list = [
+            self.bounding_box_UTM.lower_left[0],
+            self.bounding_box_UTM.lower_left[1],
+            self.bounding_box_UTM.upper_right[0],
+            self.bounding_box_UTM.upper_right[1]
         ]
 
-        self.bounding_box_meters = [
-            points[0][0],
-            points[0][1],
-            points[1][0],
-            points[1][1],
-        ]
-
-        return self.bounding_box_meters
+        return self.bounding_box_UTM, self.bounding_box_UTM_list
 
     def get_max_resolution(self) -> Union[int, None]:
         """Get maximum resolution reachable in Direct Download mode.
@@ -357,8 +346,8 @@ class EarthSpy:
         # trial resolutions in meters
         trial_resolutions = np.arange(self.data_collection_resolution, 10000)
 
-        dx = np.abs(self.bounding_box_meters[2] - self.bounding_box_meters[0])
-        dy = np.abs(self.bounding_box_meters[3] - self.bounding_box_meters[1])
+        dx = np.abs(self.bounding_box_UTM_list[2] - self.bounding_box_UTM_list[0])
+        dy = np.abs(self.bounding_box_UTM_list[3] - self.bounding_box_UTM_list[1])
 
         nb_xpixels = (dx / trial_resolutions).astype(int)
         nb_ypixels = (dy / trial_resolutions).astype(int)
@@ -463,8 +452,8 @@ class EarthSpy:
         """
         self.convert_bounding_box_coordinates()
 
-        dx = np.abs(self.bounding_box_meters[2] - self.bounding_box_meters[0])
-        dy = np.abs(self.bounding_box_meters[3] - self.bounding_box_meters[1])
+        dx = np.abs(self.bounding_box_UTM_list[2] - self.bounding_box_UTM_list[0])
+        dy = np.abs(self.bounding_box_UTM_list[3] - self.bounding_box_UTM_list[1])
 
         trial_split_boxes = np.arange(2, 100)
 
@@ -474,14 +463,14 @@ class EarthSpy:
         boxes_pixels_y = (
             dy / trial_split_boxes
         ) / self.data_collection_resolution
-
+        
         min_nb_boxes_x = int(
             trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]]
         )
         min_nb_boxes_y = int(
             trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]]
         )
-
+        
         return min_nb_boxes_x, min_nb_boxes_y
 
     def get_split_boxes(self) -> list:
@@ -499,21 +488,12 @@ class EarthSpy:
                 f"{nb_boxes_y}) grid"
             )
 
-        bbox = [
-            (self.bounding_box[0], self.bounding_box[1]),
-            (self.bounding_box[2], self.bounding_box[1]),
-            (self.bounding_box[2], self.bounding_box[3]),
-            (self.bounding_box[0], self.bounding_box[3]),
-        ]
-
-        bbox_polygon = Polygon(bbox)
-
         bbox_splitter = shb.BBoxSplitter(
-            [bbox_polygon], "epsg:4326", (nb_boxes_x, nb_boxes_y)
+            [self.bounding_box_UTM.geometry], self.bounding_box_UTM.crs, (nb_boxes_x, nb_boxes_y)
         )
 
         bbox_list = bbox_splitter.get_bbox_list()
-
+        
         self.split_boxes = bbox_list
 
         return self.split_boxes
@@ -656,7 +636,7 @@ class EarthSpy:
             elif self.download_mode == "SM":
                 new_filename = (
                     f"{self.store_folder}/"
-                    + "{date}_{i}_{self.data_collection_str}.tif"
+                    + f"{date}_{i}_{self.data_collection_str}.tif"
                 )
 
             os.rename(f"{folder}/response.tiff", new_filename)
