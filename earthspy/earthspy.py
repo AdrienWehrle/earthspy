@@ -119,8 +119,9 @@ class EarthSpy:
         :type verbose: bool, optional
         """
 
-        self.multiprocessing = multiprocessing
         self.download_mode = download_mode
+        self.multiprocessing = multiprocessing
+        self.nb_cores = nb_cores
         self.verbose = verbose
 
         self.data_collection_str = data_collection
@@ -138,9 +139,6 @@ class EarthSpy:
 
         # set and correctresolution
         self.set_correct_resolution()
-
-        if self.multiprocessing:
-            self.set_number_of_cores(nb_cores)
 
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
@@ -201,20 +199,14 @@ class EarthSpy:
 
         return self.data_collection_resolution
 
-    def set_number_of_cores(self, nb_cores: Union[None, int]) -> int:
-        """Set number of cores depending on user specifications.
-
-        :param nb_cores: Number of cores to use in multiprocessing.
-        :type nb_cores: Union[None, int]
+    def set_number_of_cores(self) -> int:
+        """Set number of cores if not specificed by user.
 
         :return: Number of cores to use in multiprocessing.
         :rtype: int
         """
-        if not nb_cores:
+        if self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
-
-        elif isinstance(nb_cores, int):
-            self.nb_cores = nb_cores
 
         return self.nb_cores
 
@@ -260,7 +252,7 @@ class EarthSpy:
         :param bounding_box: Area footprint with the format [min_x, min_y,
           max_x, max_y]. An area name stored in a JSON database can also be
           passed.
-        :type bounding_box: sentinelhub.geometry.BBox
+        :type bounding_box: shb.geometry.BBox
 
         :return: Area footprint as a Sentinelhub BBox geometry.
         :rtype: list
@@ -553,21 +545,53 @@ class EarthSpy:
 
         return self.evaluation_script
 
+    def set_multiprocessing_iterator(self) -> str:
+
+        # parallelize on acquisition dates
+        if self.download_mode == 'D' or len(self.date_range) > 1:
+            self.multiprocessing_strategy = 'acquistion_dates'
+            self.multiprocessing_iterator = self.date_range
+            
+        # parallelize on split boxes
+        elif self.download_mode == 'SM' and len(self.date_range) == 1:
+            self.multiprocessing_strategy = 'split_boxes'
+            self.multiprocessing_iterator = self.split_boxes
+
+        return self.multiprocessing_strategy, self.multiprocessing_iterator
+    
     def sentinelhub_request(
-        self, date: pd._libs.tslibs.timestamps.Timestamp
+            self, multiprocessing_iterator: Union[pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox],
     ) -> Tuple[str, list]:
-        """Send the Sentinel Hub API request.
+        """Send the Sentinel Hub API request with settings depending on the
+        multiprocessing strategy.
+
+        If parallelized on split_boxes, then date_range is run in sequence for
+        each split box. If parallelized on date_range, then split_boxes are run
+        in sequence (all split boxes for one date run on the same CPU).
 
         :param date: Date to process.
         :type date: pd._libs.tslibs.timestamps.Timestamp
 
         :return: The associated date string and outputs.
         :rtype: Tuple[str, list]
+
         """
-        date_string = date.strftime("%Y-%m-%d")
 
-        for loc_bbox in self.split_boxes:
+        if self.multiprocessing_strategy == 'acquisition_dates':
+            date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
+            sequential_iterator = self.split_boxes
 
+        elif self.multiprocessing_strategy == 'split_boxes':
+            loc_bbox = multiprocessing_iterator
+            sequential_iterator = self.date_range
+
+        for si in sequential_iterator:
+
+            if self.multiprocessing_strategy == 'acquisition_dates':
+                loc_bbox = si
+            elif self.multiprocessing_strategy == 'split_boxes':
+                date_string = si
+                
             loc_size = shb.bbox_to_dimensions(
                 loc_bbox, resolution=self.resolution
             )
@@ -660,6 +684,10 @@ class EarthSpy:
 
         if self.multiprocessing:
 
+            self.set_number_of_cores()
+            self.set_multiprocessing_iterator()
+
+            
             # message about windows
             freeze_support()
 
@@ -667,7 +695,7 @@ class EarthSpy:
 
             with Pool(self.nb_cores) as p:
                 for date, output in p.map(
-                    self.sentinelhub_request, self.date_range
+                        self.sentinelhub_request, self.multiprocessing_iterator
                 ):
                     self.outputs[date] = output
 
