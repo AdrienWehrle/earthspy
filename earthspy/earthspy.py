@@ -144,9 +144,7 @@ class EarthSpy:
         self.get_store_folder(store_folder)
 
         if download_mode == "D":
-            self.split_boxes = [
-                shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)
-            ]
+            self.split_boxes = [shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)]
         elif download_mode == "SM":
             self.get_split_boxes()
 
@@ -225,21 +223,17 @@ class EarthSpy:
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
-            nb_days_back = (
-                datetime.today() - timedelta(days=time_interval)
-            ).strftime("%Y-%m-%d")
+            nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
+                "%Y-%m-%d"
+            )
             self.date_range = pd.date_range(nb_days_back, today)
 
         elif isinstance(time_interval, list):
 
             if len(time_interval) > 1:
-                self.date_range = pd.date_range(
-                    time_interval[0], time_interval[1]
-                )
+                self.date_range = pd.date_range(time_interval[0], time_interval[1])
             else:
-                self.date_range = pd.date_range(
-                    time_interval[0], time_interval[0]
-                )
+                self.date_range = pd.date_range(time_interval[0], time_interval[0])
 
         elif isinstance(time_interval, str):
             self.date_range = pd.date_range(time_interval, time_interval)
@@ -260,17 +254,16 @@ class EarthSpy:
         if isinstance(bounding_box, list):
             self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
             self.bounding_box_name = None
-            
+
         elif isinstance(bounding_box, str):
 
-            area_bounding_boxes = pd.read_csv(
-                "./area_bounding_boxes.csv", index_col=1
+            area_bounding_boxes = pd.read_csv("./area_bounding_boxes.csv", index_col=1)
+
+            self.bounding_box = shb.BBox(
+                bbox=area_bounding_boxes[bounding_box], crs=area_bounding_boxes["crs"]
             )
-            
-            self.bounding_box = shb.BBox(bbox=area_bounding_boxes[bounding_box],
-                                         crs=area_bounding_boxes["crs"])
             self.bounding_box_name = bounding_box
-            
+
         return self.bounding_box
 
     def get_store_folder(self, store_folder: Union[str, None]) -> str:
@@ -294,7 +287,7 @@ class EarthSpy:
             folder_name = "earthspy"
         else:
             folder_name = self.bounding_box_name
-        
+
         full_path = f"{store_folder}/{folder_name}"
 
         if not os.path.exists(full_path):
@@ -304,8 +297,7 @@ class EarthSpy:
 
         return self.store_folder
 
-    def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox,
-                                                        list]:
+    def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox, list]:
         """Convert bounding boxe coordinates to a Geodetic Parameter Dataset (EPSG) in
         meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
         North).
@@ -315,12 +307,12 @@ class EarthSpy:
         """
 
         self.bounding_box_UTM = shb.to_utm_bbox(self.bounding_box)
-        
+
         self.bounding_box_UTM_list = [
             self.bounding_box_UTM.lower_left[0],
             self.bounding_box_UTM.lower_left[1],
             self.bounding_box_UTM.upper_right[0],
-            self.bounding_box_UTM.upper_right[1]
+            self.bounding_box_UTM.upper_right[1],
         ]
 
         return self.bounding_box_UTM, self.bounding_box_UTM_list
@@ -352,20 +344,11 @@ class EarthSpy:
 
         except IndexError:
 
-            if (
-                np.sum(nb_xpixels < 2500) == 0
-                and np.sum(nb_ypixels < 2500) == 0
-            ):
+            if np.sum(nb_xpixels < 2500) == 0 and np.sum(nb_ypixels < 2500) == 0:
                 origin = "x and y"
-            elif (
-                np.sum(nb_xpixels < 2500) == 0
-                and np.sum(nb_ypixels < 2500) != 0
-            ):
+            elif np.sum(nb_xpixels < 2500) == 0 and np.sum(nb_ypixels < 2500) != 0:
                 origin = "x"
-            elif (
-                np.sum(nb_xpixels < 2500) != 0
-                and np.sum(nb_ypixels < 2500) == 0
-            ):
+            elif np.sum(nb_xpixels < 2500) != 0 and np.sum(nb_ypixels < 2500) == 0:
                 origin = "y"
 
             raise IndexError(
@@ -449,20 +432,12 @@ class EarthSpy:
 
         trial_split_boxes = np.arange(2, 100)
 
-        boxes_pixels_x = (
-            dx / trial_split_boxes
-        ) / self.data_collection_resolution
-        boxes_pixels_y = (
-            dy / trial_split_boxes
-        ) / self.data_collection_resolution
-        
-        min_nb_boxes_x = int(
-            trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]]
-        )
-        min_nb_boxes_y = int(
-            trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]]
-        )
-        
+        boxes_pixels_x = (dx / trial_split_boxes) / self.data_collection_resolution
+        boxes_pixels_y = (dy / trial_split_boxes) / self.data_collection_resolution
+
+        min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
+        min_nb_boxes_y = int(trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]])
+
         return min_nb_boxes_x, min_nb_boxes_y
 
     def get_split_boxes(self) -> list:
@@ -481,11 +456,13 @@ class EarthSpy:
             )
 
         bbox_splitter = shb.BBoxSplitter(
-            [self.bounding_box_UTM.geometry], self.bounding_box_UTM.crs, (nb_boxes_x, nb_boxes_y)
+            [self.bounding_box_UTM.geometry],
+            self.bounding_box_UTM.crs,
+            (nb_boxes_x, nb_boxes_y),
         )
 
         bbox_list = bbox_splitter.get_bbox_list()
-        
+
         self.split_boxes = bbox_list
 
         return self.split_boxes
@@ -507,9 +484,7 @@ class EarthSpy:
 
         return self.evaluation_script
 
-    def get_evaluation_script(
-        self, evaluation_script: Union[None, str]
-    ) -> str:
+    def get_evaluation_script(self, evaluation_script: Union[None, str]) -> str:
         """Get custom script for data download depending on user specifications.
 
         :param evaluation_script: Custom script (preferably evalscript V3) or
@@ -546,24 +521,27 @@ class EarthSpy:
         return self.evaluation_script
 
     def set_processing_iterator(self) -> str:
-        
+
         # parallelize on acquisition dates
-        if self.download_mode == 'D' or len(self.date_range) > 1:
-            self.multiprocessing_strategy = 'acquistion_dates'
+        if self.download_mode == "D" or len(self.date_range) > 1:
+            self.multiprocessing_strategy = "acquistion_dates"
             self.multiprocessing_iterator = self.date_range
-        
+
         # parallelize on split boxes
-        elif self.download_mode == 'SM' and len(self.date_range) == 1:
-            self.multiprocessing_strategy = 'split_boxes'
+        elif self.download_mode == "SM" and len(self.date_range) == 1:
+            self.multiprocessing_strategy = "split_boxes"
             self.multiprocessing_iterator = self.split_boxes
         else:
-            self.multiprocessing_strategy = 'sequential'
+            self.multiprocessing_strategy = "sequential"
             self.multiprocessing_iterator = None
-            
+
         return self.multiprocessing_strategy
-    
+
     def sentinelhub_request(
-            self, multiprocessing_iterator: Union[pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox],
+        self,
+        multiprocessing_iterator: Union[
+            pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox
+        ],
     ) -> Tuple[str, list]:
         """Send the Sentinel Hub API request with settings depending on the
         multiprocessing strategy.
@@ -580,27 +558,30 @@ class EarthSpy:
 
         """
 
-        
-        if self.multiprocessing_strategy == 'acquisition_dates' or not self.multiprocessing:
+        if (
+            self.multiprocessing_strategy == "acquisition_dates"
+            or not self.multiprocessing
+        ):
             date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
             sequential_iterator = self.split_boxes
 
-        elif self.multiprocessing_strategy == 'split_boxes':
+        elif self.multiprocessing_strategy == "split_boxes":
             loc_bbox = multiprocessing_iterator
             sequential_iterator = self.date_range
 
         for si in sequential_iterator:
-            
-            if self.multiprocessing_strategy == 'acquisition_dates' or not self.multiprocessing:
+
+            if (
+                self.multiprocessing_strategy == "acquisition_dates"
+                or not self.multiprocessing
+            ):
                 loc_bbox = si
-            elif self.multiprocessing_strategy == 'split_boxes':
+            elif self.multiprocessing_strategy == "split_boxes":
                 date_string = si.strftime("%Y-%m-%d")
 
             print(date_string)
-            
-            loc_size = shb.bbox_to_dimensions(
-                loc_bbox, resolution=self.resolution
-            )
+
+            loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
 
             request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
@@ -654,14 +635,13 @@ class EarthSpy:
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
 
-            date = request["payload"]["input"]["data"][0]["dataFilter"][
-                "timeRange"
-            ]["from"][:10]
+            date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
+                "from"
+            ][:10]
 
             if self.download_mode == "D":
                 new_filename = (
-                    f"{self.store_folder}/"
-                    + "{date}_{self.data_collection_str}.tif"
+                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
             elif self.download_mode == "SM":
                 new_filename = (
@@ -689,11 +669,11 @@ class EarthSpy:
             start_local_time = time.ctime(start_time)
 
         self.set_processing_iterator()
-        
+
         if self.multiprocessing:
 
             self.set_number_of_cores()
-            
+
             # message about windows
             freeze_support()
 
@@ -701,14 +681,12 @@ class EarthSpy:
 
             with Pool(self.nb_cores) as p:
                 for date, output in p.map(
-                        self.sentinelhub_request, self.multiprocessing_iterator
+                    self.sentinelhub_request, self.multiprocessing_iterator
                 ):
                     self.outputs[date] = output
 
         else:
-            self.outputs = [
-                self.sentinelhub_request(date) for date in self.date_range
-            ]
+            self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
 
         self.rename_output_files()
 
