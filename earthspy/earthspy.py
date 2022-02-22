@@ -148,7 +148,8 @@ class EarthSpy:
             self.split_boxes = [shb.BBox(bbox=self.bounding_box, crs=shb.CRS.WGS84)]
         elif download_mode == "SM":
             self.get_split_boxes()
-
+            self.set_split_boxes_ids()
+            
         return None
 
     def get_data_collection(self) -> shb.DataCollection:
@@ -221,6 +222,8 @@ class EarthSpy:
         :return: Data range (can be one-day long).
         :rtype: pd.core.indexes.datetimes.DatetimeIndex
         """
+
+        # if an integer, create a datetimeIndex with the number of days from present date
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
@@ -229,16 +232,24 @@ class EarthSpy:
             )
             self.date_range = pd.date_range(nb_days_back, today)
 
-        elif isinstance(time_interval, list):
-
-            if len(time_interval) > 1:
-                self.date_range = pd.date_range(time_interval[0], time_interval[1])
-            else:
-                self.date_range = pd.date_range(time_interval[0], time_interval[0])
-
+        # if a string, create a DatetimeIndex of length 1
         elif isinstance(time_interval, str):
-            self.date_range = pd.date_range(time_interval, time_interval)
+            self.date_range = pd.to_datetime([time_interval])
 
+        # if a list, create the associated DatetimeIndex
+        elif isinstance(time_interval, list) and all(isinstance(item, str)
+                                                     for item in time_interval):
+            # if one date or more than 2, create a list of datetimes
+            if (len(time_interval) == 1) or (len(time_interval) > 2):
+                self.date_range = pd.to_datetime(time_interval)
+                
+            # if two dates, create a date range
+            elif len(time_interval) == 2:
+                self.date_range = pd.date_range(time_interval[0], time_interval[1])
+
+        else:
+            raise pd.errors.ParserError("Could not identify time_interval.")
+        
         return self.date_range
 
     def get_bounding_box(self, bounding_box: Union[list, str]) -> shb.geometry.BBox:
@@ -452,7 +463,7 @@ class EarthSpy:
 
         if self.verbose:
             print(
-                f"Initial bounding box will be split into a ({nb_boxes_x}, "
+                f"Initial bounding box split into a ({nb_boxes_x}, "
                 f"{nb_boxes_y}) grid"
             )
 
@@ -485,6 +496,15 @@ class EarthSpy:
 
         return self.evaluation_script
 
+    
+    def set_split_boxes_ids(self) -> dict:
+        """Set split boxes ids as simple integers to be accessed anytime in random order
+        (mostly for multiprocessing).
+        """
+        self.split_boxes_ids = {i: sb for i, sb in enumerate(self.split_boxes)}
+
+        return self.split_boxes_ids
+        
     def get_evaluation_script(self, evaluation_script: Union[None, str]) -> str:
         """Get custom script for data download depending on user specifications.
 
@@ -522,14 +542,16 @@ class EarthSpy:
         return self.evaluation_script
 
     def set_processing_iterator(self) -> str:
-
+        """Set multiprocessing iterator depending on the number of days and
+        split boxes to process to keep the CPUs busy.
+        """
         # parallelize on acquisition dates
-        if self.download_mode == "D" or len(self.date_range) > 1:
+        if self.download_mode == "D" or len(self.date_range) > 5:
             self.multiprocessing_strategy = "acquistion_dates"
             self.multiprocessing_iterator = self.date_range
 
         # parallelize on split boxes
-        elif self.download_mode == "SM" and len(self.date_range) == 1:
+        elif self.download_mode == "SM" and len(self.date_range) <= 5:
             self.multiprocessing_strategy = "split_boxes"
             self.multiprocessing_iterator = self.split_boxes
         else:
@@ -580,8 +602,6 @@ class EarthSpy:
             elif self.multiprocessing_strategy == "split_boxes":
                 date_string = si.strftime("%Y-%m-%d")
 
-            print(date_string)
-
             loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
 
             request = shb.SentinelHubRequest(
@@ -619,6 +639,15 @@ class EarthSpy:
                 if self.store_folder:
                     request.save_data()
 
+
+        if self.download_mode == "SM":
+            split_box_id = [k for k, v in self.split_boxes_ids.items()
+                            if v == loc_bbox][0]
+            self.outputs[f"{date_string}_{split_box_id}"] = outputs
+            
+        elif self.download_mode == "D":
+            self.outputs[date_string] = outputs
+            
         return date_string, outputs
 
     def rename_output_files(self) -> None:
@@ -631,7 +660,7 @@ class EarthSpy:
 
         self.output_filenames = []
 
-        for i, folder in enumerate(folders):
+        for folder in folders:
 
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
@@ -639,15 +668,21 @@ class EarthSpy:
             date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
                 "from"
             ][:10]
-
+            
             if self.download_mode == "D":
                 new_filename = (
                     f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
             elif self.download_mode == "SM":
+
+                split_box = shb.BBox(request["payload"]["input"]["bounds"]["bbox"],
+                                     crs=self.bounding_box_UTM.crs)
+
+                split_box_id = [k for k, v in self.split_boxes_ids.items()
+                                if v == split_box][0]
                 new_filename = (
                     f"{self.store_folder}/"
-                    + f"{date}_{i}_{self.data_collection_str}.tif"
+                    + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
                 )
 
             os.rename(f"{folder}/response.tiff", new_filename)
@@ -681,10 +716,9 @@ class EarthSpy:
             self.outputs = {}
 
             with Pool(self.nb_cores) as p:
-                for date, output in p.map(
+                p.map(
                     self.sentinelhub_request, self.multiprocessing_iterator
-                ):
-                    self.outputs[date] = output
+                )
 
         else:
             self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
