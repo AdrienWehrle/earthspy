@@ -149,7 +149,7 @@ class EarthSpy:
         elif download_mode == "SM":
             self.get_split_boxes()
             self.set_split_boxes_ids()
-            
+
         return None
 
     def get_data_collection(self) -> shb.DataCollection:
@@ -237,19 +237,20 @@ class EarthSpy:
             self.date_range = pd.to_datetime([time_interval])
 
         # if a list, create the associated DatetimeIndex
-        elif isinstance(time_interval, list) and all(isinstance(item, str)
-                                                     for item in time_interval):
+        elif isinstance(time_interval, list) and all(
+            isinstance(item, str) for item in time_interval
+        ):
             # if one date or more than 2, create a list of datetimes
             if (len(time_interval) == 1) or (len(time_interval) > 2):
                 self.date_range = pd.to_datetime(time_interval)
-                
+
             # if two dates, create a date range
             elif len(time_interval) == 2:
                 self.date_range = pd.date_range(time_interval[0], time_interval[1])
 
         else:
             raise pd.errors.ParserError("Could not identify time_interval.")
-        
+
         return self.date_range
 
     def get_bounding_box(self, bounding_box: Union[list, str]) -> shb.geometry.BBox:
@@ -496,7 +497,6 @@ class EarthSpy:
 
         return self.evaluation_script
 
-    
     def set_split_boxes_ids(self) -> dict:
         """Set split boxes ids as simple integers to be accessed anytime in random order
         (mostly for multiprocessing).
@@ -504,7 +504,7 @@ class EarthSpy:
         self.split_boxes_ids = {i: sb for i, sb in enumerate(self.split_boxes)}
 
         return self.split_boxes_ids
-        
+
     def get_evaluation_script(self, evaluation_script: Union[None, str]) -> str:
         """Get custom script for data download depending on user specifications.
 
@@ -639,15 +639,15 @@ class EarthSpy:
                 if self.store_folder:
                     request.save_data()
 
-
         if self.download_mode == "SM":
-            split_box_id = [k for k, v in self.split_boxes_ids.items()
-                            if v == loc_bbox][0]
+            split_box_id = [
+                k for k, v in self.split_boxes_ids.items() if v == loc_bbox
+            ][0]
             self.outputs[f"{date_string}_{split_box_id}"] = outputs
-            
+
         elif self.download_mode == "D":
             self.outputs[date_string] = outputs
-            
+
         return date_string, outputs
 
     def rename_output_files(self) -> None:
@@ -668,18 +668,21 @@ class EarthSpy:
             date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
                 "from"
             ][:10]
-            
+
             if self.download_mode == "D":
                 new_filename = (
                     f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
             elif self.download_mode == "SM":
 
-                split_box = shb.BBox(request["payload"]["input"]["bounds"]["bbox"],
-                                     crs=self.bounding_box_UTM.crs)
+                split_box = shb.BBox(
+                    request["payload"]["input"]["bounds"]["bbox"],
+                    crs=self.bounding_box_UTM.crs,
+                )
 
-                split_box_id = [k for k, v in self.split_boxes_ids.items()
-                                if v == split_box][0]
+                split_box_id = [
+                    k for k, v in self.split_boxes_ids.items() if v == split_box
+                ][0]
                 new_filename = (
                     f"{self.store_folder}/"
                     + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
@@ -716,9 +719,7 @@ class EarthSpy:
             self.outputs = {}
 
             with Pool(self.nb_cores) as p:
-                p.map(
-                    self.sentinelhub_request, self.multiprocessing_iterator
-                )
+                p.map(self.sentinelhub_request, self.multiprocessing_iterator)
 
         else:
             self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
@@ -753,9 +754,11 @@ class EarthSpy:
         for date in distinct_dates:
 
             date_output_files = [f for f in output_files if date in f]
-            date_output_filename = date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
-            date_output_filename = date_output_filename.replace('_0_', '_SM_')
-            
+            date_output_filename = (
+                date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
+            )
+            date_output_filename = date_output_filename.replace("_0_", "_SM_")
+
             parameters = (
                 ["", "-o", date_output_filename]
                 + ["-n", "0.0"]
