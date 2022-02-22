@@ -5,6 +5,7 @@
 
 """
 
+from collections import Counter
 from datetime import datetime, timedelta
 import glob
 import json
@@ -708,16 +709,26 @@ class EarthSpy:
         capability.  A "mosaic" code is added to the name of the file in which
         the different rasters have been merged.
         """
+
         output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
-        output_filename = output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
 
-        parameters = (
-            ["", "-o", output_filename]
-            + ["-n", "0.0"]
-            + output_files
-            + ["-co", "COMPRESS=LZW"]
-        )
+        dates = [f.split(os.sep)[-1].split("_")[0] for f in output_files]
 
-        gdal_merge.main(parameters)
+        distinct_dates = list(Counter(dates).keys())
+
+        for date in distinct_dates:
+
+            date_output_files = [f for f in output_files if date in f]
+            date_output_filename = date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
+            date_output_filename = date_output_filename.replace('_0_', '_SM_')
+            
+            parameters = (
+                ["", "-o", date_output_filename]
+                + ["-n", "0.0"]
+                + date_output_files
+                + ["-co", "COMPRESS=LZW"]
+            )
+
+            gdal_merge.main(parameters)
 
         return None
