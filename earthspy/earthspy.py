@@ -14,9 +14,7 @@ import numpy as np
 import os
 from osgeo_utils import gdal_merge
 import pandas as pd
-import pyproj
 import requests
-from shapely.geometry import Polygon
 import sentinelhub as shb
 import shutil
 import time
