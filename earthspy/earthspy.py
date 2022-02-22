@@ -590,12 +590,14 @@ class EarthSpy:
             sequential_iterator = self.date_range
 
         for si in sequential_iterator:
-
+            
             if self.multiprocessing_strategy == 'acquisition_dates' or not self.multiprocessing:
                 loc_bbox = si
             elif self.multiprocessing_strategy == 'split_boxes':
-                date_string = si
-                
+                date_string = si.strftime("%Y-%m-%d")
+
+            print(date_string)
+            
             loc_size = shb.bbox_to_dimensions(
                 loc_bbox, resolution=self.resolution
             )
