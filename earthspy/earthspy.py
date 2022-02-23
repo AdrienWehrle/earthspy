@@ -563,7 +563,7 @@ class EarthSpy:
         multiprocessing_iterator: Union[
             pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox
         ],
-    ) -> Tuple[str, list]:
+    ) -> shb.sentinelhub_request.SentinelHubRequest:
         """Send the Sentinel Hub API request with settings depending on the
         multiprocessing strategy.
 
@@ -574,8 +574,8 @@ class EarthSpy:
         :param date: Date to process.
         :type date: pd._libs.tslibs.timestamps.Timestamp
 
-        :return: The associated date string and outputs.
-        :rtype: Tuple[str, list]
+        :return: The associated Sentinel Hub request
+        :rtype: shb.sentinelhub_request.SentinelHubRequest
 
         """
 
@@ -630,13 +630,12 @@ class EarthSpy:
                 or np.nanmean(outputs) == 255
             ):
                 print(f"{date_string} not available")
-                return None
+                request = None
 
             else:
                 print(f"Downloading {date_string}...")
                 if self.store_folder:
                     request.save_data()
-                    self.raw_filenames.append(request.get_filename_list()[0].split(os.sep)[0])
                     
         if self.download_mode == "SM":
             split_box_id = [
@@ -647,7 +646,7 @@ class EarthSpy:
         elif self.download_mode == "D":
             self.outputs[date_string] = outputs
 
-        return date_string, outputs
+        return request
 
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
@@ -656,7 +655,7 @@ class EarthSpy:
         same date are numbered after the acquisition date.
         """
         
-        folders = glob.glob(f"{self.store_folder}/*")
+        folders = [f"{self.store_folder}/{fn}" for fn in self.raw_filenames]
 
         self.output_filenames = []
 
@@ -720,23 +719,26 @@ class EarthSpy:
             self.raw_filenames = []
             
             with Pool(self.nb_cores) as p:
-                p.map(self.sentinelhub_request, self.multiprocessing_iterator)
+                for request in p.map(self.sentinelhub_request, self.multiprocessing_iterator):
+
+                    if request is not None:
+                        self.raw_filenames.append(request.get_filename_list()[0].split(os.sep)[0])
 
         else:
-            self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
+            self.raw_filenames = [self.sentinelhub_request(date) for date in self.date_range]
 
-        # self.rename_output_files()
+        self.rename_output_files()
 
-        # if self.download_mode == "SM":
-        #     self.merge_rasters()
+        if self.download_mode == "SM":
+            self.merge_rasters()
 
-        # if self.verbose:
-        #     end_time = time.time()
-        #     end_local_time = time.ctime(end_time)
-        #     processing_time = (end_time - start_time) / 60
-        #     print("--- Processing time: %s minutes ---" % processing_time)
-        #     print("--- Start time: %s ---" % start_local_time)
-        #     print("--- End time: %s ---" % end_local_time)
+        if self.verbose:
+            end_time = time.time()
+            end_local_time = time.ctime(end_time)
+            processing_time = (end_time - start_time) / 60
+            print("--- Processing time: %s minutes ---" % processing_time)
+            print("--- Start time: %s ---" % start_local_time)
+            print("--- End time: %s ---" % end_local_time)
 
         return None
 
@@ -746,15 +748,13 @@ class EarthSpy:
         the different rasters have been merged.
         """
 
-        output_files = sorted(glob.glob(f"{self.store_folder}/*.tif"))
-
-        dates = [f.split(os.sep)[-1].split("_")[0] for f in output_files]
+        dates = [f.split(os.sep)[-1].split("_")[0] for f in self.output_filenames]
 
         distinct_dates = list(Counter(dates).keys())
 
         for date in distinct_dates:
 
-            date_output_files = [f for f in output_files if date in f]
+            date_output_files = [f for f in self.output_filenames if date in f]
             date_output_filename = (
                 date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
             )
