@@ -563,7 +563,7 @@ class EarthSpy:
         multiprocessing_iterator: Union[
             pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox
         ],
-    ) -> shb.sentinelhub_request.SentinelHubRequest:
+    ) -> list:
         """Send the Sentinel Hub API request with settings depending on the
         multiprocessing strategy.
 
@@ -574,8 +574,8 @@ class EarthSpy:
         :param date: Date to process.
         :type date: pd._libs.tslibs.timestamps.Timestamp
 
-        :return: The associated Sentinel Hub request
-        :rtype: shb.sentinelhub_request.SentinelHubRequest
+        :return: List of the Sentinel Hub requests run in sequence
+        :rtype: list
 
         """
 
@@ -590,6 +590,8 @@ class EarthSpy:
             loc_bbox = multiprocessing_iterator
             sequential_iterator = self.date_range
 
+        shb_requests = []
+        
         for si in sequential_iterator:
 
             if (
@@ -601,7 +603,7 @@ class EarthSpy:
                 date_string = si.strftime("%Y-%m-%d")
 
             loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
-
+            
             request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
                 evalscript=self.evaluation_script,
@@ -636,6 +638,7 @@ class EarthSpy:
                 print(f"Downloading {date_string}...")
                 if self.store_folder:
                     request.save_data()
+                    shb_requests.append(request)
                     
         if self.download_mode == "SM":
             split_box_id = [
@@ -646,7 +649,7 @@ class EarthSpy:
         elif self.download_mode == "D":
             self.outputs[date_string] = outputs
 
-        return request
+        return shb_requests
 
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
@@ -656,7 +659,7 @@ class EarthSpy:
         """
         
         folders = [f"{self.store_folder}/{fn}" for fn in self.raw_filenames]
-
+        
         self.output_filenames = []
 
         for folder in folders:
@@ -716,17 +719,21 @@ class EarthSpy:
             freeze_support()
 
             self.outputs = {}
-            self.raw_filenames = []
+            raw_filenames = []
             
             with Pool(self.nb_cores) as p:
-                for request in p.map(self.sentinelhub_request, self.multiprocessing_iterator):
+                for shb_requests in p.map(self.sentinelhub_request, self.multiprocessing_iterator):
 
-                    if request is not None:
-                        self.raw_filenames.append(request.get_filename_list()[0].split(os.sep)[0])
+                    if shb_requests is not None:
+                        raw_filenames.append([r.get_filename_list()[0].split(os.sep)[0] for r in shb_requests])
 
         else:
-            self.raw_filenames = [self.sentinelhub_request(date) for date in self.date_range]
+            requests = [self.sentinelhub_request(date) for date in self.date_range]
+            raw_filenames = [f.split(os.sep)[0] for f in requests.get_filename_list()]
 
+        # flatten list of lists (coming from parallel processing)
+        self.raw_filenames = [item for sublist in raw_filenames for item in sublist]
+        
         self.rename_output_files()
 
         if self.download_mode == "SM":
