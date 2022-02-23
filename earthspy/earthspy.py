@@ -636,7 +636,8 @@ class EarthSpy:
                 print(f"Downloading {date_string}...")
                 if self.store_folder:
                     request.save_data()
-
+                    self.raw_filenames.append(request.get_filename_list()[0].split(os.sep)[0])
+                    
         if self.download_mode == "SM":
             split_box_id = [
                 k for k, v in self.split_boxes_ids.items() if v == loc_bbox
@@ -654,6 +655,7 @@ class EarthSpy:
         collection. If download in SM mode, then the different rasters with the
         same date are numbered after the acquisition date.
         """
+        
         folders = glob.glob(f"{self.store_folder}/*")
 
         self.output_filenames = []
@@ -715,25 +717,26 @@ class EarthSpy:
             freeze_support()
 
             self.outputs = {}
-
+            self.raw_filenames = []
+            
             with Pool(self.nb_cores) as p:
                 p.map(self.sentinelhub_request, self.multiprocessing_iterator)
 
         else:
             self.outputs = [self.sentinelhub_request(date) for date in self.date_range]
 
-        self.rename_output_files()
+        # self.rename_output_files()
 
-        if self.download_mode == "SM":
-            self.merge_rasters()
+        # if self.download_mode == "SM":
+        #     self.merge_rasters()
 
-        if self.verbose:
-            end_time = time.time()
-            end_local_time = time.ctime(end_time)
-            processing_time = (end_time - start_time) / 60
-            print("--- Processing time: %s minutes ---" % processing_time)
-            print("--- Start time: %s ---" % start_local_time)
-            print("--- End time: %s ---" % end_local_time)
+        # if self.verbose:
+        #     end_time = time.time()
+        #     end_local_time = time.ctime(end_time)
+        #     processing_time = (end_time - start_time) / 60
+        #     print("--- Processing time: %s minutes ---" % processing_time)
+        #     print("--- Start time: %s ---" % start_local_time)
+        #     print("--- End time: %s ---" % end_local_time)
 
         return None
 
