@@ -366,7 +366,6 @@ class EarthSpy:
                 f"forced by {origin} dimension(s). "
                 "Consider narrowing down the study area."
             )
-            max_resolution = None
 
         return max_resolution
 
