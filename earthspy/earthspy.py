@@ -256,10 +256,10 @@ class EarthSpy:
         :param bounding_box: Area footprint with the format [min_x, min_y,
           max_x, max_y]. An area name stored in a JSON database can also be
           passed.
-        :type bounding_box: shb.geometry.BBox
+        :type bounding_box: Union[list, str]
 
         :return: Area footprint as a Sentinelhub BBox geometry.
-        :rtype: list
+        :rtype: sentinelhub.geometry.BBox
         """
         if isinstance(bounding_box, list):
             self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
