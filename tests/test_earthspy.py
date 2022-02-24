@@ -9,12 +9,12 @@
 import earthspy as es
 import sentinelhub as shb
 
-class TestEarthspy:
 
+class TestEarthspy:
     def __init__(self) -> None:
         """Assign some test variables.
         """
-        
+
         self.test_evalscript = """
         //VERSION=3
         function setup(){
@@ -36,31 +36,33 @@ class TestEarthspy:
         self.test_collection = "SENTINEL2_L2A"
 
         return None
-    
+
     def test_init(self) -> None:
         """Test auth.txt parsing and connection configuration.
 
         """
-        self.t = es.EarthSpy('./auth_test.txt')
+        self.t = es.EarthSpy("./auth_test.txt")
 
-        assert self.t.CLIENT_ID == 'test_username'
-        assert self.t.CLIENT_SECRET == 'test_password'
+        assert self.t.CLIENT_ID == "test_username"
+        assert self.t.CLIENT_SECRET == "test_password"
 
         assert isinstance(self.t.config, shb.config.SHConfig)
-        assert self.t.config.sh_client_id == 'test_username'
+        assert self.t.config.sh_client_id == "test_username"
 
         return None
 
     def test_set_query_parameters(self) -> None:
         """Test direct attribute assignement.
         """
-        
-        self.t.set_query_parameters(bounding_box=[-51.13, 69.204, -51.06, 69.225],
-                                    time_interval=['2019-08-23'],
-                                    evaluation_script=self.test_evalscript,
-                                    data_collection=self.test_collection,
-                                    download_mode='SM')
-        
+
+        self.t.set_query_parameters(
+            bounding_box=[-51.13, 69.204, -51.06, 69.225],
+            time_interval=["2019-08-23"],
+            evaluation_script=self.test_evalscript,
+            data_collection=self.test_collection,
+            download_mode="SM",
+        )
+
         assert self.t.download_mode is not None
         assert self.t.verbose
         assert self.t.data_collection == self.test_collection
@@ -73,5 +75,5 @@ class TestEarthspy:
         self.t.get_data_collection()
 
         assert self.t.data_collection == shb.DataCollection[self.test_collection]
-        
+
         return None
