@@ -7,7 +7,6 @@
 
 from collections import Counter
 from datetime import datetime, timedelta
-import glob
 import json
 from multiprocessing import cpu_count, Pool, freeze_support
 import numpy as np
