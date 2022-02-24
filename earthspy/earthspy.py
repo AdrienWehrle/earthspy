@@ -202,6 +202,8 @@ class EarthSpy:
         :return: Number of cores to use in multiprocessing.
         :rtype: int
         """
+        
+        # keep two CPUs free to prevent overload
         if self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
 
