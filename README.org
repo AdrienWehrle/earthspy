@@ -2,6 +2,9 @@
 [[https://www.gnu.org/licenses/gpl-3.0][https://img.shields.io/badge/License-GPLv3-blue.svg]]
 [[https://github.com/AdrienWehrle/earthspy/actions][file:https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg]]
 [[https://github.com/psf/black][https://img.shields.io/badge/code%20style-black-000000.svg]]
+[[https://lgtm.com/projects/g/AdrienWehrle/earthspy/alerts/][https://img.shields.io/lgtm/alerts/g/AdrienWehrle/earthspy.svg?logo=lgtm&logoWidth=18]]
+[[https://lgtm.com/projects/g/AdrienWehrle/earthspy/context:python][https://img.shields.io/lgtm/grade/python/g/AdrienWehrle/earthspy.svg?logo=lgtm&logoWidth=18]]
+
 * earthspy
 
 =earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and NRT applications. Just like a spy!
