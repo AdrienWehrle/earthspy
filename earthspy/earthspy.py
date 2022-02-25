@@ -226,7 +226,7 @@ class EarthSpy:
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
-            nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
+            nb_days_back = (datetime.today() + timedelta(days=time_interval)).strftime(
                 "%Y-%m-%d"
             )
             self.date_range = pd.date_range(nb_days_back, today)
@@ -545,7 +545,7 @@ class EarthSpy:
         """
         # parallelize on acquisition dates
         if self.download_mode == "D" or len(self.date_range) > 5:
-            self.multiprocessing_strategy = "acquistion_dates"
+            self.multiprocessing_strategy = "acquisition_dates"
             self.multiprocessing_iterator = self.date_range
 
         # parallelize on split boxes
@@ -579,10 +579,13 @@ class EarthSpy:
 
         """
 
+        print(self.multiprocessing_strategy)
+
         if (
             self.multiprocessing_strategy == "acquisition_dates"
             or not self.multiprocessing
         ):
+            print("here")
             date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
             sequential_iterator = self.split_boxes
 
