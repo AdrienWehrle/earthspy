@@ -6,16 +6,13 @@
 
 """
 
-import earthspy as es
+import earthspy.earthspy as es
 import sentinelhub as shb
 
 
 class TestEarthspy:
-    def __init__(self) -> None:
-        """Assign some test variables.
-        """
 
-        self.test_evalscript = """
+    test_evalscript = """
         //VERSION=3
         function setup(){
           return{
@@ -33,14 +30,10 @@ class TestEarthspy:
 
         """
 
-        self.test_collection = "SENTINEL2_L2A"
-
-        return None
+    test_collection = "SENTINEL2_L2A"
 
     def test_init(self) -> None:
-        """Test auth.txt parsing and connection configuration.
-
-        """
+        """Test auth.txt parsing and connection configuration."""
         self.t = es.EarthSpy("./auth_test.txt")
 
         assert self.t.CLIENT_ID == "test_username"
@@ -52,8 +45,7 @@ class TestEarthspy:
         return None
 
     def test_set_query_parameters(self) -> None:
-        """Test direct attribute assignement.
-        """
+        """Test direct attribute assignement."""
 
         self.t.set_query_parameters(
             bounding_box=[-51.13, 69.204, -51.06, 69.225],
@@ -70,8 +62,7 @@ class TestEarthspy:
         return None
 
     def test_get_data_collection(self) -> None:
-        """Test data collection selection.
-        """
+        """Test data collection selection."""
         self.t.get_data_collection()
 
         assert self.t.data_collection == shb.DataCollection[self.test_collection]
