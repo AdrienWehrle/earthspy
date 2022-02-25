@@ -1,8 +1,0 @@
-LICENSE
-setup.py
-earthspy/__init__.py
-earthspy/earthspy.py
-earthspy.egg-info/PKG-INFO
-earthspy.egg-info/SOURCES.txt
-earthspy.egg-info/dependency_links.txt
-earthspy.egg-info/top_level.txt
