@@ -226,7 +226,7 @@ class EarthSpy:
         if isinstance(time_interval, int):
 
             today = datetime.today().strftime("%Y-%m-%d")
-            nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
+            nb_days_back = (datetime.today() + timedelta(days=time_interval)).strftime(
                 "%Y-%m-%d"
             )
             self.date_range = pd.date_range(nb_days_back, today)
