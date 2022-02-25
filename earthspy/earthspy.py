@@ -579,13 +579,10 @@ class EarthSpy:
 
         """
 
-        print(self.multiprocessing_strategy)
-
         if (
             self.multiprocessing_strategy == "acquisition_dates"
             or not self.multiprocessing
         ):
-            print("here")
             date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
             sequential_iterator = self.split_boxes
 
@@ -769,6 +766,8 @@ class EarthSpy:
 
         distinct_dates = list(Counter(dates).keys())
 
+        self.output_filenames_renamed = []
+        
         for date in distinct_dates:
 
             date_output_files = [f for f in self.output_filenames if date in f]
@@ -786,4 +785,6 @@ class EarthSpy:
 
             gdal_merge.main(parameters)
 
+            self.output_filenames_renamed.append(date_output_filename)
+            
         return None
