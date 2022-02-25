@@ -21,3 +21,9 @@ As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 * Environment setup
 * Examples
 * Operational Near Real-Time (NRT) deployment 
+
+=earthspy= can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [[https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py][earthspy_NRT.py]] and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
+#+BEGIN_SRC bash :results verbatim
+    # m h  dom mon dow   command
+    00 12 * * * /bin/bash -c "/path/to/earthspy_NRT.py" > /path/to/log/log_earthspy_NRT.txt
+#+END_SRC
