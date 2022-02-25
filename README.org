@@ -46,7 +46,8 @@ job.set_query_parameters(
 job.send_sentinelhub_requests()
 #+end_src
 
-Homemade custom evalscripts can also be passed without effort:
+Homemade custom evalscripts can also be passed without effort to e.g. compute high-level indices (NDVI, NDSI...).
+Below is presented an example with the default evaluation script used above (to keep it short):
 
 #+begin_src python
 
