@@ -2,15 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 
-@author: Adrien Wehrlé, University of Zurich, Switzerland
+@author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
 """
 
 import earthspy.earthspy as es
-
-from importlib import reload
-
-es = reload(es)
 
 # %% set example evalscript, data collectio and bounding box
 
