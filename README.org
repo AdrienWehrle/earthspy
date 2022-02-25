@@ -11,15 +11,38 @@
 
 Some useful capabilities: 
   - Data download in multiprocessing
-  - Data download at optimized resolutions with the Direct Download (DD) method 
-  - Data download at raw resolution with the Split and Merge Downlodad (SMD) method
-  - Data storage with an efficient structure
+  - Data download at optimized resolutions with the Direct (D) download mode 
+  - Data download at raw resolution with the Split and Merge (SM) downlodad mode
+  - Data storage with efficient structure
 
 As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
 
 
-* Environment setup
-* Examples
+* Installation
+* Usage
+At present =earthspy= can be run by users within a couple of lines of Python code that execute three main tasks:
+- set up a Sentinel Hub connection (for a given Sentinel Hub account)
+- set query parameters including Sentinel Hub API variables and =earthspy= additional ones (mainly for download efficiency)
+- send request
+
+Below is presented a simple application of =earthspy= for the download of Sentinel-2 data download around Ilulissat, Greenland for few days in August 2019 using a True Color custom script available on Sentinel Hub's [[https://custom-scripts.sentinel-hub.com][custom script online repository]].
+
+#+begin_src python
+
+import earthspy.earthspy as es
+
+job = es.EarthSpy("/path/to/auth.txt")
+
+job.set_query_parameters(
+    bounding_box=[-51.13, 69.204, -51.06, 69.225],
+    time_interval=["2019-08-03", "2019-08-10"],
+    evaluation_script="https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/true_color/script.js",
+    data_collection="SENTINEL2_L2A",
+)
+
+job.send_sentinelhub_requests()
+#+end_src
+
 * Operational Near Real-Time (NRT) deployment 
 
 =earthspy= can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [[https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py][earthspy_NRT.py]] and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
