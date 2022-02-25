@@ -545,7 +545,7 @@ class EarthSpy:
         """
         # parallelize on acquisition dates
         if self.download_mode == "D" or len(self.date_range) > 5:
-            self.multiprocessing_strategy = "acquistion_dates"
+            self.multiprocessing_strategy = "acquisition_dates"
             self.multiprocessing_iterator = self.date_range
 
         # parallelize on split boxes
@@ -579,10 +579,13 @@ class EarthSpy:
 
         """
 
+        print(self.multiprocessing_strategy)
+
         if (
             self.multiprocessing_strategy == "acquisition_dates"
             or not self.multiprocessing
         ):
+            print("here")
             date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
             sequential_iterator = self.split_boxes
 

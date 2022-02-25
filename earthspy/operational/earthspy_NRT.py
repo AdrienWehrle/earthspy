@@ -8,7 +8,11 @@
 
 import earthspy.earthspy as es
 
-# %% set example evalscript and bounding box
+from importlib import reload
+
+es = reload(es)
+
+# %% set example evalscript, data collectio and bounding box
 
 ex_evalscript = """
     //VERSION=3
@@ -34,16 +38,17 @@ ex_bounding_box = [-51.13, 69.204, -51.06, 69.225]
 
 # %% setup SentinelHub connection
 
-# assume auth.txt is in root directory
-job = es.EarthSpy('../../auth.txt')
+# assume auth.txt is in earthspy root directory
+job = es.EarthSpy("/path/to/auth.txt")
 
 # download all images available between 3 days ago and today
-job.set_query_parameters(bounding_box=ex_bounding_box,
-                         time_interval=-3,
-                         evaluation_script=ex_evalscript,
-                         data_collection='SENTINEL1_EW',
-                         download_mode='SM')
+job.set_query_parameters(
+    bounding_box=ex_bounding_box,
+    time_interval=-3,
+    evaluation_script=ex_evalscript,
+    data_collection=ex_collection,
+    download_mode="SM",
+)
 
 # send request
 job.send_sentinelhub_requests()
-
