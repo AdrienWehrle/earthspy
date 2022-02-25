@@ -12,7 +12,7 @@
 Some useful capabilities: 
   - Data download in multiprocessing
   - Data download at optimized resolutions with the Direct (D) download mode 
-  - Data download at raw resolution with the Split and Merge (SM) downlodad mode
+  - Data download at raw resolutions with the Split and Merge (SM) downlodad mode
   - Data storage with efficient structure
 
 As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
@@ -31,8 +31,10 @@ Below is presented a simple application of =earthspy= for the download of Sentin
 
 import earthspy.earthspy as es
 
+# auth.txt should contain username and password (first and second row)
 job = es.EarthSpy("/path/to/auth.txt")
 
+# as simple as it gets
 job.set_query_parameters(
     bounding_box=[-51.13, 69.204, -51.06, 69.225],
     time_interval=["2019-08-03", "2019-08-10"],
@@ -40,6 +42,42 @@ job.set_query_parameters(
     data_collection="SENTINEL2_L2A",
 )
 
+# and off it goes!
+job.send_sentinelhub_requests()
+#+end_src
+
+Homemade custom evalscripts can also be passed without effort:
+
+#+begin_src python
+
+# Sentinel-2 default True Color script
+example_evalscript = """
+    //VERSION=3
+    function setup(){
+      return{
+        input: ["B02", "B03", "B04", "dataMask"],
+        output: {bands: 4}
+      }
+    }
+
+    function evaluatePixel(sample){
+      // Set gain for visualisation
+      let gain = 2.5;
+      // Return RGB
+      return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain];
+    }
+
+    """
+
+# pass string to evaluation_script
+job.set_query_parameters(
+    bounding_box=[-51.13, 69.204, -51.06, 69.225],
+    time_interval=["2019-08-03", "2019-08-10"],
+    evaluation_script=example_evalscript,
+    data_collection="SENTINEL2_L2A",
+)
+
+# and off it goes!
 job.send_sentinelhub_requests()
 #+end_src
 
