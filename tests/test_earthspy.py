@@ -11,7 +11,6 @@ import sentinelhub as shb
 
 
 class TestEarthspy:
-
     test_evalscript = """
         //VERSION=3
         function setup(){
