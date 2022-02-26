@@ -17,6 +17,12 @@ Some useful capabilities:
 
 As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
 
+* Table of Contents                               :toc_2:noexport:
+- [[#earthspy][earthspy]]
+- [[#installation][Installation]]
+- [[#usage][Usage]]
+- [[#operational-near-real-time-nrt-deployment][Operational Near Real-Time (NRT) deployment]]
+- [[documentation][Documentation]]
 
 * Installation
 * Usage
