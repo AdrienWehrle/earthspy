@@ -89,3 +89,7 @@ job.send_sentinelhub_requests()
     # m h  dom mon dow   command
     00 12 * * * /bin/bash -c "/path/to/earthspy_NRT.py" > /path/to/log/log_earthspy_NRT.txt
 #+END_SRC
+
+* Documentation
+
+The preliminary documentation of =earthspy= is hosted on [[https://earthspy.readthedocs.io/en/latest/][readthedocs]].
