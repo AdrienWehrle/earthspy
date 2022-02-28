@@ -25,6 +25,14 @@ As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 - [[#documentation][Documentation]]
 
 * Installation
+
+Currently the easiest way to install =earthspy= is via [[https://github.com/][Github]] and [[https://pip.pypa.io/en/stable/][pip]]:
+#+begin_src shell :results verbatim
+git clone git@github.com:AdrienWehrle/earthspy.git
+cd earthspy
+pip install -e .
+#+end_src
+
 * Usage
 At present =earthspy= can be run by users within a couple of lines of Python code that execute three main tasks:
 - set up a Sentinel Hub connection (for a given Sentinel Hub account)
