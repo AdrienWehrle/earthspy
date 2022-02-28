@@ -130,10 +130,7 @@ class EarthSpy:
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
 
-        if resolution:
-            self.resolution = resolution
-        else:
-            self.resolution = None
+        self.resolution = resolution
 
         # set and correctresolution
         self.set_correct_resolution()
