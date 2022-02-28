@@ -83,8 +83,9 @@ class EarthSpy:
           not specified, a default script is used.
         :type evaluation_script: str
 
-        :param data_collection: Data collection name as listed at
-          https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html
+        :param data_collection: Data collection name. Check 
+          shb.DataCollection.get_available_collections() for a list of all 
+          collections currently available.
         :type data_collection: str
 
         :param resolution: Resolution in meters to use for data download,
