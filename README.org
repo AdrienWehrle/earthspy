@@ -12,7 +12,7 @@
 Some useful capabilities: 
   - Data download in multiprocessing
   - Data download at optimized resolutions with the Direct (D) download mode 
-  - Data download at raw resolutions with the Split and Merge (SM) downlodad mode
+  - Data download at native resolutions with the Split and Merge (SM) downlodad mode
   - Data storage with efficient structure
 
 As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
