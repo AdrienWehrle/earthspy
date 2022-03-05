@@ -223,8 +223,12 @@ class EarthSpy:
         # if an integer, create a datetimeIndex with the number of days from present date
         if isinstance(time_interval, int):
 
+            # keep time_interval positive
+            if time_interval < 0:
+                time_interval *= -1
+                
             today = datetime.today().strftime("%Y-%m-%d")
-            nb_days_back = (datetime.today() + timedelta(days=time_interval)).strftime(
+            nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
                 "%Y-%m-%d"
             )
             self.date_range = pd.date_range(nb_days_back, today)
