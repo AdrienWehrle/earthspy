@@ -96,6 +96,36 @@ job.set_query_parameters(
 job.send_sentinelhub_requests()
 #+end_src
 
+[[https://geojson.org/][GEOJSON]] files containing a polygon corresponding to a given region of interest
+and its associated name can also be created at [[https://geojson.io/#map=2/20.0/0.0][geojson.io]] and stored in [[https://github.com/AdrienWehrle/earthspy/tree/29-add-roi-json-files/data][./data]].
+In this way, the name of the region can be directly passed to the =bounding_box=
+query parameter. See below for a simple example with the [[https://github.com/AdrienWehrle/earthspy/blob/29-add-roi-json-files/data/ilulissat.geojson][ilulissat.geojson]]
+example file. It is worth mentioning that the GEOJSON =name= property used to
+set the =bounding_box= parameter can sound useless as the region name can
+already be extracted from the file name, but it actually allows for the use of
+spaces and special characters that shouldn't be used in file names (and that
+without reformating).
+
+#+begin_src python
+
+import earthspy.earthspy as es
+
+# auth.txt should contain username and password (first and second row)
+job = es.EarthSpy("/path/to/auth.txt")
+
+# as simple as it gets
+job.set_query_parameters(
+    bounding_box="Ilulissat",
+    time_interval=["2019-08-03", "2019-08-10"],
+    evaluation_script="https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/true_color/script.js",
+    data_collection="SENTINEL2_L2A",
+)
+
+# and off it goes!
+job.send_sentinelhub_requests()
+#+end_src
+
+
 * Operational Near Real-Time (NRT) deployment 
 
 =earthspy= can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [[https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py][earthspy_NRT.py]] and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
