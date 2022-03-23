@@ -100,11 +100,7 @@ job.send_sentinelhub_requests()
 and its associated name can also be created at [[https://geojson.io/#map=2/20.0/0.0][geojson.io]] and stored in [[https://github.com/AdrienWehrle/earthspy/tree/29-add-roi-json-files/data][./data]].
 In this way, the name of the region can be directly passed to the =bounding_box=
 query parameter. See below for a simple example with the [[https://github.com/AdrienWehrle/earthspy/blob/29-add-roi-json-files/data/ilulissat.geojson][ilulissat.geojson]]
-example file. It is worth mentioning that the GEOJSON =name= property used to
-set the =bounding_box= parameter can sound useless as the region name can
-already be extracted from the file name, but it actually allows for the use of
-spaces and special characters that shouldn't be used in file names (and that
-without reformating).
+example file.
 
 #+begin_src python
 
