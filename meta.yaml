@@ -18,9 +18,6 @@ requirements:
     - sentinelhub
     - gdal
 
-  run:
-    - python
-
 test:
   imports:
     - earthspy
