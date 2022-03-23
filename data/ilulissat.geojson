@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ilulissat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -51.13,
+              69.204
+            ],
+            [
+              -51.06,
+              69.204
+            ],
+            [
+              -51.06,
+              69.225
+            ],
+            [
+              -51.13,
+              69.225
+            ],
+            [
+              -51.13,
+              69.204
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
