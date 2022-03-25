@@ -7,8 +7,9 @@
 """
 
 import earthspy.earthspy as es
-import sentinelhub as shb
+import numpy as np
 import pandas as pd
+import sentinelhub as shb
 
 
 class TestEarthspy:
@@ -40,9 +41,20 @@ class TestEarthspy:
 
     test_bounding_box = [-51.13, 69.204, -51.06, 69.225]
 
+    test_area_name = "Ilulissat"
+
     t1 = es.EarthSpy("./auth_test1.txt")
     t1.set_query_parameters(
         bounding_box=[-51.13, 69.204, -51.06, 69.225],
+        time_interval=["2019-08-23"],
+        evaluation_script=test_evalscript,
+        data_collection=test_collection,
+        download_mode="SM",
+    )
+
+    t2 = es.EarthSpy("./auth_test1.txt")
+    t2.set_query_parameters(
+        bounding_box=test_area_name,
         time_interval=["2019-08-23"],
         evaluation_script=test_evalscript,
         data_collection=test_collection,
@@ -123,6 +135,17 @@ class TestEarthspy:
 
         bb1 = self.t1.get_bounding_box(bounding_box=self.test_bounding_box)
         assert isinstance(bb1, shb.geometry.BBox)
+
+        bb2 = self.t2.get_bounding_box(bounding_box=self.test_area_name)
+        assert isinstance(bb2, shb.geometry.BBox)
+        area_coordinates = np.array(bb2.geojson["coordinates"][0])
+        area_bounding_box = [
+            np.nanmin(area_coordinates[:, 0]),
+            np.nanmin(area_coordinates[:, 1]),
+            np.nanmax(area_coordinates[:, 0]),
+            np.nanmax(area_coordinates[:, 1]),
+        ]
+        assert area_bounding_box == self.test_bounding_box
 
     def test_get_store_folder(self) -> None:
         """Test store folder selection"""
