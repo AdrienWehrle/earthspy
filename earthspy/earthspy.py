@@ -7,6 +7,7 @@
 
 from collections import Counter
 from datetime import datetime, timedelta
+import glob
 import json
 from multiprocessing import cpu_count, Pool, freeze_support
 import numpy as np
@@ -83,8 +84,8 @@ class EarthSpy:
           not specified, a default script is used.
         :type evaluation_script: str
 
-        :param data_collection: Data collection name. Check 
-          shb.DataCollection.get_available_collections() for a list of all 
+        :param data_collection: Data collection name. Check
+          shb.DataCollection.get_available_collections() for a list of all
           collections currently available.
         :type data_collection: str
 
@@ -226,7 +227,7 @@ class EarthSpy:
             # keep time_interval positive
             if time_interval < 0:
                 time_interval *= -1
-                
+
             today = datetime.today().strftime("%Y-%m-%d")
             nb_days_back = (datetime.today() - timedelta(days=time_interval)).strftime(
                 "%Y-%m-%d"
@@ -271,12 +272,29 @@ class EarthSpy:
 
         elif isinstance(bounding_box, str):
 
-            area_bounding_boxes = pd.read_csv("./area_bounding_boxes.csv", index_col=1)
+            json_files = glob.glob("../data/*.geojson")
 
-            self.bounding_box = shb.BBox(
-                bbox=area_bounding_boxes[bounding_box], crs=area_bounding_boxes["crs"]
+            for json_file in json_files:
+
+                area_object = json.load(json_file)
+                area_name = area_object["features"][0]["properties"]["name"]
+
+                if area_name == bounding_box:
+                    break
+
+            area_coordinates = np.array(
+                area_object["features"][0]["geometry"]["coordinates"][0]
             )
-            self.bounding_box_name = bounding_box
+
+            area_bounding_box = [
+                np.nanmin(area_coordinates[:, 0]),
+                np.nanmin(area_coordinates[:, 1]),
+                np.nanmax(area_coordinates[:, 0]),
+                np.nanmax(area_coordinates[:, 1]),
+            ]
+
+            self.bounding_box = shb.BBox(bbox=area_bounding_box, crs=shb.CRS.WGS84)
+            self.bounding_box_name = area_name
 
         return self.bounding_box
 
@@ -769,7 +787,7 @@ class EarthSpy:
         distinct_dates = list(Counter(dates).keys())
 
         self.output_filenames_renamed = []
-        
+
         for date in distinct_dates:
 
             date_output_files = [f for f in self.output_filenames if date in f]
@@ -788,5 +806,5 @@ class EarthSpy:
             gdal_merge.main(parameters)
 
             self.output_filenames_renamed.append(date_output_filename)
-            
+
         return None
