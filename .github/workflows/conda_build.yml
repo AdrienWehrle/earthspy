@@ -16,5 +16,5 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         $CONDA/bin/conda install conda-build
-        conda config --add channels conda-forge
+        $CONDA/bin/conda config --add channels conda-forge
         $CONDA/bin/conda build .
