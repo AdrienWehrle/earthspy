@@ -848,6 +848,10 @@ class EarthSpy:
         # set iterators
         self.set_processing_iterator()
 
+        print(
+            self.nb_cores, "*********************************************************"
+        )
+
         if self.multiprocessing:
 
             # set number of cores to use depending on user input
