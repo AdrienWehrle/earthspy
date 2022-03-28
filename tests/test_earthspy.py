@@ -8,21 +8,30 @@
 
 import earthspy.earthspy as es
 import numpy as np
-import pandas as pd
 import os
+import pandas as pd
+import requests
 import sentinelhub as shb
 
 
 class TestEarthspy:
 
     # an example of custom script
-    test_evalscript = (
-        """//VERSION=3\nfunction setup(){\n  return{\n"""
-        + """input: ["B02", "B03", "B04", "dataMask"],\n    output: {bands: 4}\n"""
-        + """}\n}\n\nfunction evaluatePixel(sample){\n  // Set gain for visualisation\n"""
-        + """let gain = 2.5;\n  // Return RGB\n  return [sample.B04 * gain, sample.B03"""
-        + """* gain, sample.B02 * gain, sample.dataMask];\n}\n"""
-    )
+    test_evalscript = """
+        //VERSION=3
+        function setup(){
+          return{
+            input: ["B02", "B03", "B04", "dataMask"],
+            output: {bands: 4}
+          }
+        }
+        function evaluatePixel(sample){
+          // Set gain for visualisation
+          let gain = 2.5;
+          // Return RGB
+          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain];
+        }
+        """
 
     # an example of custom script URL
     test_url = (
@@ -128,7 +137,7 @@ class TestEarthspy:
 
         d2 = self.t1.get_date_range(time_interval="2019-08-01")
         # check if single date (str) was set accordingly
-        assert isinstance(d2, pd.Timestamp)
+        assert isinstance(d2, pd.DatetimeIndex)
 
         d3 = self.t1.get_date_range(time_interval=["2019-08-01"])
         # check if single date (list) was set accordingly
@@ -221,7 +230,7 @@ class TestEarthspy:
 
         es1 = self.t1.get_evaluation_script_from_link(self.test_url)
         # check that evalscript was set accordingly
-        assert es1 == self.test_evalscript
+        assert es1 == requests.get(self.test_evalscript).text
 
     def test_set_split_boxes_ids(self) -> None:
         """Test split box ID generation"""
