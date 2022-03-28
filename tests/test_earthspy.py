@@ -9,6 +9,7 @@
 import earthspy.earthspy as es
 import numpy as np
 import pandas as pd
+import os
 import sentinelhub as shb
 
 
@@ -47,6 +48,8 @@ class TestEarthspy:
 
     # an example of area available as GEOJSON file
     test_area_name = "Ilulissat"
+
+    print(os.getcwd())
 
     # intialize a first instance
     t1 = es.EarthSpy("../tests/auth_test.txt")
