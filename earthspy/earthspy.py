@@ -312,7 +312,8 @@ class EarthSpy:
             for json_file in json_files:
 
                 # open GEOJSON file
-                area_object = json.load(json_file)
+                with open(json_file) as f:
+                    area_object = json.load(f)
 
                 # extract area name from features
                 area_name = area_object["features"][0]["properties"]["name"]
