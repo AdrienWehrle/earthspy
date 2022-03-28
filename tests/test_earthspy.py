@@ -49,7 +49,7 @@ class TestEarthspy:
     test_area_name = "Ilulissat"
 
     # intialize a first instance
-    t1 = es.EarthSpy("./tests/auth_test1.txt")
+    t1 = es.EarthSpy("../tests/auth_test1.txt")
     # example of default query parameters set
     t1.set_query_parameters(
         bounding_box=[-51.13, 69.204, -51.06, 69.225],
@@ -60,7 +60,7 @@ class TestEarthspy:
     )
 
     # initialize a second instance
-    t2 = es.EarthSpy("./tests/auth_test1.txt")
+    t2 = es.EarthSpy("../tests/auth_test1.txt")
     # example of query parameters set with direct area name
     t2.set_query_parameters(
         bounding_box=test_area_name,
