@@ -225,6 +225,8 @@ class EarthSpy:
         # keep two CPUs free to prevent overload
         if self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
+        elif cpu_count() == 1:
+            self.nb_cores = 1
 
         return self.nb_cores
 
