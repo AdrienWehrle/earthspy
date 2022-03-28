@@ -354,7 +354,7 @@ class EarthSpy:
 
         # set Downloads folder as default main store folder
         if store_folder is None:
-            store_folder = f"{Path.home()}/Downloads""
+            store_folder = f"{Path.home()}/Downloads"
 
         # create folder if doesnt exist
         if not os.path.exists(store_folder):
