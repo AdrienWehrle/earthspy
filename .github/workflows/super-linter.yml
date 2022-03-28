@@ -11,7 +11,7 @@ on: [pull_request]
 #     branches: [ main ]
 #   pull_request:
 #     branches: [ main ]
-# jobs:
+jobs:
   run-lint:
     runs-on: ubuntu-latest
     steps:
