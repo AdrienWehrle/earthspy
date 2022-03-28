@@ -1,21 +1,36 @@
 name: CI
-on: [pull_request, push]
+on: [push, pull_request]
 jobs:
   lint_python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - run: pip install bandit black codespell flake8 isort mypy pytest pyupgrade safety
+      - run: pip install bandit black codespell flake8 isort 
       - run: bandit --recursive --skip B101 . || true  # B101 is assert statements
       - run: black --check . || true
       - run: codespell || true  # --ignore-words-list="" --skip=""
       - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - run: flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --show-source --statistics
       - run: isort --check-only --profile black . || true
-      # - run: pip install -r requirements.txt || true
-      # - run: mypy --install-types --non-interactive . || true
-      # - run: pytest . || true
-      # - run: pytest --doctest-modules . || true
-      # - run: shopt -s globstar && pyupgrade --py36-plus **/*.py || true
-      # - run: safety check
+      - run: sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+      - run: sudo apt-get update
+      - run: sudo apt-get install gdal-bin libgdal-dev
+      - run: pip install -e .
+      - run: pytest . || true
+    
+  run_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install pytest safety
+      - run: sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+      - run: sudo apt-get update
+      - run: sudo apt-get install gdal-bin libgdal-dev
+      - run: pip install -e .
+      - run: pytest . || true
+      - run: safety check
+    env:
+        SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
+        SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}

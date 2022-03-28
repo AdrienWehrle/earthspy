@@ -14,6 +14,7 @@ import numpy as np
 import os
 from osgeo_utils import gdal_merge
 import pandas as pd
+from pathlib import Path
 import requests
 import sentinelhub as shb
 import shutil
@@ -224,6 +225,8 @@ class EarthSpy:
         # keep two CPUs free to prevent overload
         if self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
+        elif cpu_count() == 1 or cpu_count() is None:
+            self.nb_cores = 1
 
         return self.nb_cores
 
@@ -304,12 +307,15 @@ class EarthSpy:
         elif isinstance(bounding_box, str):
 
             # list all available GEOJSON files
-            json_files = glob.glob("../data/*.geojson")
+            json_files = glob.glob("data/*.geojson")
+
+            print(json_files)
 
             for json_file in json_files:
 
                 # open GEOJSON file
-                area_object = json.load(json_file)
+                with open(json_file) as f:
+                    area_object = json.load(f)
 
                 # extract area name from features
                 area_name = area_object["features"][0]["properties"]["name"]
@@ -353,7 +359,7 @@ class EarthSpy:
 
         # set Downloads folder as default main store folder
         if store_folder is None:
-            store_folder = f"/home/{os.getlogin()}/Downloads"
+            store_folder = f"{Path.home()}/Downloads"
 
         # create folder if doesnt exist
         if not os.path.exists(store_folder):
