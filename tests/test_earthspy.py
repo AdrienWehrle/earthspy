@@ -16,23 +16,13 @@ import sentinelhub as shb
 class TestEarthspy:
 
     # an example of custom script
-    test_evalscript = """
-        //VERSION=3
-        function setup(){
-          return{
-            input: ["B02", "B03", "B04", "dataMask"],
-            output: {bands: 4}
-          }
-        }
-
-        function evaluatePixel(sample){
-          // Set gain for visualisation
-          let gain = 2.5;
-          // Return RGB
-          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain];
-        }
-
-        """
+    test_evalscript = (
+        """//VERSION=3\nfunction setup(){\n  return{\n"""
+        + """input: ["B02", "B03", "B04", "dataMask"],\n    output: {bands: 4}\n"""
+        + """}\n}\n\nfunction evaluatePixel(sample){\n  // Set gain for visualisation\n"""
+        + """let gain = 2.5;\n  // Return RGB\n  return [sample.B04 * gain, sample.B03"""
+        + """* gain, sample.B02 * gain, sample.dataMask];\n}\n"""
+    )
 
     # an example of custom script URL
     test_url = (
@@ -100,7 +90,7 @@ class TestEarthspy:
         # check if attributes were set accordingly
         assert self.t1.download_mode is not None
         assert self.t1.verbose
-        assert self.t1.data_collection == self.test_collection
+        assert self.t1.data_collection_str == self.test_collection
 
     def test_get_data_collection(self) -> None:
         """Test data collection selection."""
@@ -134,15 +124,15 @@ class TestEarthspy:
 
         d1 = self.t1.get_date_range(time_interval=3)
         # check if date from present was set accordingly
-        assert isinstance(d1, pd.core.indexes.datetimes.DatetimeIndex)
+        assert isinstance(d1, pd.DatetimeIndex)
 
         d2 = self.t1.get_date_range(time_interval="2019-08-01")
         # check if single date (str) was set accordingly
-        assert isinstance(d2, pd._libs.tslibs.timestamps.Timestamp)
+        assert isinstance(d2, pd.Timestamp)
 
         d3 = self.t1.get_date_range(time_interval=["2019-08-01"])
         # check if single date (list) was set accordingly
-        assert isinstance(d3, pd.core.indexes.datetimes.DatetimeIndex)
+        assert isinstance(d3, pd.DatetimeIndex)
         # check if only the very date was included
         assert len(d3) == 1
 
@@ -150,7 +140,7 @@ class TestEarthspy:
             time_interval=["2019-08-01", "2019-08-02", "2019-08-03"]
         )
         # check if a list of dates was set accordingly
-        assert isinstance(d4, pd.core.indexes.datetimes.DatetimeIndex)
+        assert isinstance(d4, pd.DatetimeIndex)
         # check if all dates were included
         assert len(d4) == 3
 
@@ -206,7 +196,7 @@ class TestEarthspy:
 
         mr1 = self.t1.get_max_resolution()
         # check that maximum resolution was set correctly
-        assert isinstance(mr1, int)
+        assert isinstance(mr1, np.int64)
 
     def test_set_correct_resolution(self) -> None:
         """Test resolution refinement"""
