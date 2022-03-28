@@ -305,7 +305,7 @@ class EarthSpy:
         elif isinstance(bounding_box, str):
 
             # list all available GEOJSON files
-            json_files = glob.glob("../data/*.geojson")
+            json_files = glob.glob("data/*.geojson")
 
             for json_file in json_files:
 
