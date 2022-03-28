@@ -14,6 +14,7 @@ import numpy as np
 import os
 from osgeo_utils import gdal_merge
 import pandas as pd
+from pathlib import Path
 import requests
 import sentinelhub as shb
 import shutil
@@ -353,7 +354,7 @@ class EarthSpy:
 
         # set Downloads folder as default main store folder
         if store_folder is None:
-            store_folder = f"/home/{os.getlogin()}/Downloads"
+            store_folder = f"{Path.home()}/Downloads""
 
         # create folder if doesnt exist
         if not os.path.exists(store_folder):
