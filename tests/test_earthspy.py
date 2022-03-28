@@ -18,7 +18,7 @@ class TestEarthspy:
 
     # create local variables for convenience
     SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
-    SH_CLIENT_SECRET = os.environ["SH_CLIENT_ID"]
+    SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
 
     # create file containing credentials for testing
     with open("auth.txt", "w") as out:
