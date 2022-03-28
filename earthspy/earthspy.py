@@ -307,6 +307,8 @@ class EarthSpy:
             # list all available GEOJSON files
             json_files = glob.glob("data/*.geojson")
 
+            print(json_files)
+
             for json_file in json_files:
 
                 # open GEOJSON file
