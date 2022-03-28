@@ -30,5 +30,7 @@ jobs:
       - run: sudo apt-get install gdal-bin libgdal-dev
       - run: pip install -e .
       - run: pytest . || true
-      - run: pytest --doctest-modules . || true
       - run: safety check
+    env:
+        SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
+        SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
