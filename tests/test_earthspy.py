@@ -16,9 +16,13 @@ import sentinelhub as shb
 
 class TestEarthspy:
 
+    # create local variables for convenience
+    SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
+    SH_CLIENT_SECRET = os.environ["SH_CLIENT_ID"]
+
     # create file containing credentials for testing
     with open("auth.txt", "w") as out:
-        out.writelines([os.environ["SH_CLIENT_ID"], os.environ["SH_CLIENT_SECRET"]])
+        out.write(f"{SH_CLIENT_ID}\n{SH_CLIENT_SECRET}")
 
     # an example of custom script
     test_evalscript = """
