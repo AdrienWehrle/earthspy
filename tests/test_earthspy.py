@@ -100,7 +100,8 @@ class TestEarthspy:
 
         # check if connection was properly setup
         assert isinstance(self.t1.config, shb.config.SHConfig)
-        assert self.t1.config.sh_client_id == "test_username"
+        assert self.t1.config.sh_client_id == os.environ["SH_CLIENT_ID"]
+        assert self.t1.config.sh_client_secret == os.environ["SH_CLIENT_SECRET"]
 
         return None
 
