@@ -1,5 +1,5 @@
 name: CI
-on: [pull_request, push]
+on: [push]
 jobs:
   lint_python:
     runs-on: ubuntu-latest

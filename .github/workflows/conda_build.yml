@@ -1,6 +1,6 @@
 name: Python Package Using Anaconda
 
-on: [push]
+on: [pull_request]
 
 jobs:
   build-linux:
