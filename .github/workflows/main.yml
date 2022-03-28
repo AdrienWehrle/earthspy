@@ -1,5 +1,5 @@
 name: CI
-on: [push]
+on: [push, pull_request]
 jobs:
   lint_python:
     runs-on: ubuntu-latest
@@ -34,16 +34,3 @@ jobs:
     env:
         SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
         SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
-
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v1
-        id: cpu-cores
-      - name: run tests
-        run: npx jest --max-workers ${{ steps.cpu-cores.outputs.count }}
