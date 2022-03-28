@@ -225,7 +225,7 @@ class EarthSpy:
         # keep two CPUs free to prevent overload
         if self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
-        elif cpu_count() == 1:
+        elif cpu_count() == 1 or cpu_count() is None:
             self.nb_cores = 1
 
         return self.nb_cores
@@ -847,10 +847,6 @@ class EarthSpy:
 
         # set iterators
         self.set_processing_iterator()
-
-        print(
-            self.nb_cores, "*********************************************************"
-        )
 
         if self.multiprocessing:
 
