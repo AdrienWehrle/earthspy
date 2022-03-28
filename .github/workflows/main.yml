@@ -13,9 +13,9 @@ jobs:
       - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - run: flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --show-source --statistics
       - run: isort --check-only --profile black . || true
-      - run: sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
-      - run: sudo apt-get update
-      - run: sudo apt-get install gdal-bin libgdal-dev
+      # - run: sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+      # - run: sudo apt-get update
+      # - run: sudo apt-get install gdal-bin libgdal-dev
       - run: pip install -e .
       # - run: mypy --install-types --non-interactive . || true
       # - run: pytest . || true
