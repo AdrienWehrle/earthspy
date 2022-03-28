@@ -16,6 +16,10 @@ import sentinelhub as shb
 
 class TestEarthspy:
 
+    # create file containing credentials for testing
+    with open("auth.txt", "w") as out:
+        out.writelines([os.environ["SH_CLIENT_ID"], os.environ["SH_CLIENT_SECRET"]])
+
     # an example of custom script
     test_evalscript = """
         //VERSION=3
@@ -51,7 +55,7 @@ class TestEarthspy:
     print(os.getcwd())
 
     # intialize a first instance
-    t1 = es.EarthSpy("tests/auth_test.txt")
+    t1 = es.EarthSpy("auth.txt")
     # example of default query parameters set
     t1.set_query_parameters(
         bounding_box=[-51.13, 69.204, -51.06, 69.225],
@@ -62,10 +66,21 @@ class TestEarthspy:
     )
 
     # initialize a second instance
-    t2 = es.EarthSpy("tests/auth_test.txt")
+    t2 = es.EarthSpy("auth.txt")
     # example of query parameters set with direct area name
     t2.set_query_parameters(
         bounding_box=test_area_name,
+        time_interval=["2019-08-23"],
+        evaluation_script=test_evalscript,
+        data_collection=test_collection,
+        download_mode="SM",
+    )
+
+    # intialize a third instance
+    t3 = es.EarthSpy("auth.txt")
+    # example of default query parameters set
+    t3.set_query_parameters(
+        bounding_box=[-51.13, 69.204, -51.06, 69.225],
         time_interval=["2019-08-23"],
         evaluation_script=test_evalscript,
         data_collection=test_collection,
@@ -76,8 +91,8 @@ class TestEarthspy:
         """Test auth.txt parsing and connection configuration."""
 
         # check for credentials
-        assert self.t1.CLIENT_ID == "test_username"
-        assert self.t1.CLIENT_SECRET == "test_password"
+        assert self.t1.CLIENT_ID == os.environ["SH_CLIENT_ID"]
+        assert self.t1.CLIENT_SECRET == os.environ["SH_CLIENT_SECRET"]
 
         # check if connection was properly setup
         assert isinstance(self.t1.config, shb.config.SHConfig)
