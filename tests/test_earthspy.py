@@ -244,7 +244,7 @@ class TestEarthspy:
 
         es1 = self.t1.get_evaluation_script(None)
         # check that default evalscript was set accordingly
-        assert es1 == self.test_evalscript
+        assert es1 == requests.get(self.test_url).text
 
         es2 = self.t1.get_evaluation_script(self.test_evalscript)
         # check that passed evalscript was set correctly
