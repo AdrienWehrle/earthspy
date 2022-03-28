@@ -58,20 +58,18 @@ class TestEarthspy:
 
     print(os.getcwd())
 
-    # intialize a first instance
+    # example of query with default parameters
     t1 = es.EarthSpy("auth.txt")
-    # example of default query parameters set
     t1.set_query_parameters(
-        bounding_box=[-51.13, 69.204, -51.06, 69.225],
+        bounding_box=test_bounding_box,
         time_interval=["2019-08-23"],
         evaluation_script=test_evalscript,
         data_collection=test_collection,
         download_mode="SM",
     )
 
-    # initialize a second instance
+    # example of query with direct area name
     t2 = es.EarthSpy("auth.txt")
-    # example of query parameters set with direct area name
     t2.set_query_parameters(
         bounding_box=test_area_name,
         time_interval=["2019-08-23"],
@@ -80,12 +78,11 @@ class TestEarthspy:
         download_mode="SM",
     )
 
-    # intialize a third instance
+    # example of query with date string
     t3 = es.EarthSpy("auth.txt")
-    # example of default query parameters set
     t3.set_query_parameters(
         bounding_box=[-51.13, 69.204, -51.06, 69.225],
-        time_interval=["2019-08-23"],
+        time_interval="2019-08-23",
         evaluation_script=test_evalscript,
         data_collection=test_collection,
         download_mode="SM",
@@ -301,16 +298,16 @@ class TestEarthspy:
     def test_send_sentinelhub_requests(self) -> None:
         """Test API outputs"""
 
-        self.t1.send_sentinelhub_requests()
+        self.t3.send_sentinelhub_requests()
         # check that a list of raw file names was created
-        assert all(isinstance(item, str) for item in self.t1.raw_filenames)
+        assert all(isinstance(item, str) for item in self.t3.raw_filenames)
         # check that one raw file name per split box was created
-        assert len(self.t1.outputs) == len(self.t1.split_boxes)
+        assert len(self.t3.outputs) == len(self.t3.split_boxes)
 
     def test_merge_rasters(self) -> None:
 
-        self.t1.rename_output_files()
+        self.t3.rename_output_files()
         # check that a list of renamed file names was created
-        assert all(isinstance(item, str) for item in self.t1.output_filenames_renamed)
+        assert all(isinstance(item, str) for item in self.t3.output_filenames_renamed)
         # check that one renamed file name per split box was created
-        assert len(self.t1.output_filenames_renamed) == len(self.t1.split_boxes)
+        assert len(self.t1.output_filenames_renamed) == len(self.t3.split_boxes)
