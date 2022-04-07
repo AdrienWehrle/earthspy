@@ -79,6 +79,7 @@ class EarthSpy:
         multiprocessing: bool = True,
         nb_cores: Union[None, int] = None,
         download_mode: str = "SM",
+        remove_splitboxes: bool = True,
         verbose: bool = True,
     ) -> None:
         """Define a set of parameters used for the API request.
@@ -128,7 +129,12 @@ class EarthSpy:
           needed to achieve specified (or raw) resolution.
         :type download_mode: str, optional
 
-        :param verbose: Whether to print processing status, defaults to True.
+        :param remove_splitboxes: Whether to remove rasters of split boxes
+          after merge (mosaic creation) or not.
+        :type download_mode: bool, optional
+
+        :param verbose: Whether to print processing status or not, defaults
+          to True.
         :type verbose: bool, optional
         """
 
@@ -137,6 +143,7 @@ class EarthSpy:
         self.multiprocessing = multiprocessing
         self.nb_cores = nb_cores
         self.verbose = verbose
+        self.remove_splitboxes = remove_splitboxes
 
         # set query attributes
         self.data_collection_str = data_collection
@@ -978,5 +985,10 @@ class EarthSpy:
 
             # save file name of merged raster
             self.output_filenames_renamed.append(date_output_filename)
+
+            # remove split boxes to keep only the mosaic
+            if self.remove_splitboxes:
+                for file in date_output_files:
+                    os.remove(file)
 
         return None
