@@ -143,7 +143,7 @@ class EarthSpy:
         self.get_satellite_name()
         self.get_data_collection_resolution()
 
-        # set spatial and temporal coverage
+        # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
 
@@ -155,6 +155,9 @@ class EarthSpy:
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
+
+        # find available data within user time range
+        self.get_available_data()
 
         # set download mode
         if download_mode == "D":
@@ -179,7 +182,7 @@ class EarthSpy:
 
         return self.data_collection
 
-    def get_available_data(self) -> pd.core.indexes.datetimes.DatetimeIndex:
+    def get_available_data(self) -> list:
         """Search for available data with STAC REST API before download."""
 
         # search catalog based on user inputs
@@ -195,11 +198,17 @@ class EarthSpy:
         # store metadata of available scenes
         self.metadata = [list(iterator) for iterator in search_iterator]
 
-        # store dates of available scenes for download
+        # create date +-1 hour around acquisition time
+        time_difference = timedelta(hours=1)
+
+        # extract time stamps
         query_date_range = [iterator.get_timestamps() for iterator in search_iterator]
-        self.query_date_range = pd.to_datetime(
-            [item for sublist in query_date_range for item in sublist]
-        )
+
+        # flatten list
+        all_timestamps = [item for sublist in query_date_range for item in sublist]
+
+        # join tiles in the same orbit acquisition in a single time stamp
+        self.query_date_range = shb.filter_times(all_timestamps, time_difference)
 
         return self.query_date_range
 
@@ -677,12 +686,12 @@ class EarthSpy:
         """
 
         # parallelize on acquisition dates
-        if self.download_mode == "D" or len(self.user_date_range) > 5:
+        if self.download_mode == "D" or len(self.query_date_range) > 5:
             self.multiprocessing_strategy = "acquisition_dates"
-            self.multiprocessing_iterator = self.user_date_range
+            self.multiprocessing_iterator = self.query_date_range
 
         # parallelize on split boxes
-        elif self.download_mode == "SM" and len(self.user_date_range) <= 5:
+        elif self.download_mode == "SM" and len(self.query_date_range) <= 5:
             self.multiprocessing_strategy = "split_boxes"
             self.multiprocessing_iterator = self.split_boxes
 
@@ -724,7 +733,7 @@ class EarthSpy:
 
         elif self.multiprocessing_strategy == "split_boxes":
             loc_bbox = multiprocessing_iterator
-            sequential_iterator = self.user_date_range
+            sequential_iterator = self.query_date_range
 
         # store Sentinel Hub requests
         shb_requests = []
@@ -906,7 +915,9 @@ class EarthSpy:
 
         # if not multiprocessing, run in sequential
         else:
-            requests = [self.sentinelhub_request(date) for date in self.user_date_range]
+            requests = [
+                self.sentinelhub_request(date) for date in self.query_date_range
+            ]
             raw_filenames = [f.split(os.sep)[0] for f in requests.get_filename_list()]
 
         # flatten list of file name lists (coming from parallel processing)
