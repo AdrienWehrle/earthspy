@@ -782,10 +782,12 @@ class EarthSpy:
             # send Sentinel Hub Request
             if self.store_folder:
                 outputs = request.get_data(save_data=True)
-                shb_requests.append(request)
             else:
                 outputs = request.get_data()
 
+        # store request
+        shb_requests.append(request)
+        
         # if split boxes, use split box id as dictionnary key
         if self.download_mode == "SM":
             split_box_id = [
