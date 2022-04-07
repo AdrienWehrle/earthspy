@@ -58,6 +58,9 @@ class EarthSpy:
         # setup Sentinel Hub connection
         self.config = shb.SHConfig()
 
+        # setup Sentinel Hub Catalog API (with STAC Specification)
+        self.catalog = shb.SentinelHubCatalog(config=self.config)
+
         # set credentials
         self.config.sh_client_id = self.CLIENT_ID
         self.config.sh_client_secret = self.CLIENT_SECRET
@@ -176,6 +179,30 @@ class EarthSpy:
 
         return self.data_collection
 
+    def get_available_data(self) -> pd.core.indexes.datetimes.DatetimeIndex:
+        """Search for available data with STAC REST API before download."""
+
+        # search catalog based on user inputs
+        search_iterator = [
+            self.catalog.search(
+                self.data_collection,
+                bbox=self.bounding_box,
+                time=d.strftime("%Y-%m-%d"),
+            )
+            for d in self.user_date_range
+        ]
+
+        # store metadata of available scenes
+        self.metadata = [list(iterator) for iterator in search_iterator]
+
+        # store dates of available scenes for download
+        query_date_range = [iterator.get_timestamps() for iterator in search_iterator]
+        self.query_date_range = pd.to_datetime(
+            [item for sublist in query_date_range for item in sublist]
+        )
+
+        return self.query_date_range
+
     def get_satellite_name(self) -> str:
         """Extract satellite name from data
         collection.
@@ -259,11 +286,11 @@ class EarthSpy:
             )
 
             # store as a date range
-            self.date_range = pd.date_range(nb_days_back, today)
+            self.user_date_range = pd.date_range(nb_days_back, today)
 
         # if a string, create a DatetimeIndex of length 1
         elif isinstance(time_interval, str):
-            self.date_range = pd.to_datetime([time_interval])
+            self.user_date_range = pd.to_datetime([time_interval])
 
         # if a list, create the associated DatetimeIndex
         elif isinstance(time_interval, list) and all(
@@ -271,16 +298,16 @@ class EarthSpy:
         ):
             # if one date or more than 2, create a list of datetimes
             if (len(time_interval) == 1) or (len(time_interval) > 2):
-                self.date_range = pd.to_datetime(time_interval)
+                self.user_date_range = pd.to_datetime(time_interval)
 
             # if two dates, create a date range
             elif len(time_interval) == 2:
-                self.date_range = pd.date_range(time_interval[0], time_interval[1])
+                self.user_date_range = pd.date_range(time_interval[0], time_interval[1])
 
         else:
             raise pd.errors.ParserError("Could not identify time_interval.")
 
-        return self.date_range
+        return self.user_date_range
 
     def get_bounding_box(self, bounding_box: Union[list, str]) -> shb.geometry.BBox:
         """Get bounding box for data download depending on user specifications.
@@ -650,12 +677,12 @@ class EarthSpy:
         """
 
         # parallelize on acquisition dates
-        if self.download_mode == "D" or len(self.date_range) > 5:
+        if self.download_mode == "D" or len(self.user_date_range) > 5:
             self.multiprocessing_strategy = "acquisition_dates"
-            self.multiprocessing_iterator = self.date_range
+            self.multiprocessing_iterator = self.user_date_range
 
         # parallelize on split boxes
-        elif self.download_mode == "SM" and len(self.date_range) <= 5:
+        elif self.download_mode == "SM" and len(self.user_date_range) <= 5:
             self.multiprocessing_strategy = "split_boxes"
             self.multiprocessing_iterator = self.split_boxes
 
@@ -697,7 +724,7 @@ class EarthSpy:
 
         elif self.multiprocessing_strategy == "split_boxes":
             loc_bbox = multiprocessing_iterator
-            sequential_iterator = self.date_range
+            sequential_iterator = self.user_date_range
 
         # store Sentinel Hub requests
         shb_requests = []
@@ -879,7 +906,7 @@ class EarthSpy:
 
         # if not multiprocessing, run in sequential
         else:
-            requests = [self.sentinelhub_request(date) for date in self.date_range]
+            requests = [self.sentinelhub_request(date) for date in self.user_date_range]
             raw_filenames = [f.split(os.sep)[0] for f in requests.get_filename_list()]
 
         # flatten list of file name lists (coming from parallel processing)
