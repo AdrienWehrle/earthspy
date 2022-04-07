@@ -787,7 +787,7 @@ class EarthSpy:
 
         # store request
         shb_requests.append(request)
-        
+
         # if split boxes, use split box id as dictionnary key
         if self.download_mode == "SM":
             split_box_id = [
@@ -853,10 +853,10 @@ class EarthSpy:
                     + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
                 )
 
-            # rename file using new file name
-            os.rename(f"{folder}/response.tiff", new_filename)
-
-            self.output_filenames.append(new_filename)
+            if os.path.exists(f"{folder}/response.tiff"):
+                # rename file using new file name
+                os.rename(f"{folder}/response.tiff", new_filename)
+                self.output_filenames.append(new_filename)
 
         # remove raw storage folders
         for name in os.listdir(self.store_folder):
