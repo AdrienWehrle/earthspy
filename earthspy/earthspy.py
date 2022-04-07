@@ -775,14 +775,16 @@ class EarthSpy:
                 config=self.config,
             )
 
-            # send Sentinel Hub Request
-            outputs = request.get_data()
+            # verbose statement
+            if self.verbose:
+                print(f"Downloading {date_string}...")
 
-            # if results are valid, store data and request
-            print(f"Downloading {date_string}...")
+            # send Sentinel Hub Request
             if self.store_folder:
-                request.save_data()
+                outputs = request.get_data(save_data=True)
                 shb_requests.append(request)
+            else:
+                outputs = request.get_data()
 
         # if split boxes, use split box id as dictionnary key
         if self.download_mode == "SM":
