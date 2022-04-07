@@ -15,6 +15,7 @@ import os
 from osgeo_utils import gdal_merge
 import pandas as pd
 from pathlib import Path
+import re
 import requests
 import sentinelhub as shb
 import shutil
@@ -962,7 +963,7 @@ class EarthSpy:
             )
 
             # add download mode in file name
-            date_output_filename = date_output_filename.replace("_0_", "_SM_")
+            date_output_filename = re.sub("_\d+_", "_SM_", date_output_filename)
 
             # prepare GDAL parameters
             parameters = (
