@@ -778,21 +778,11 @@ class EarthSpy:
             # send Sentinel Hub Request
             outputs = request.get_data()
 
-            # if results are invalid, dont store request
-            if (
-                not np.isfinite(np.nanmean(outputs))
-                or np.nanmean(outputs) == 0
-                or np.nanmean(outputs) == 255
-            ):
-                print(f"{date_string} not available")
-                request = None
-
             # if results are valid, store data and request
-            else:
-                print(f"Downloading {date_string}...")
-                if self.store_folder:
-                    request.save_data()
-                    shb_requests.append(request)
+            print(f"Downloading {date_string}...")
+            if self.store_folder:
+                request.save_data()
+                shb_requests.append(request)
 
         # if split boxes, use split box id as dictionnary key
         if self.download_mode == "SM":
