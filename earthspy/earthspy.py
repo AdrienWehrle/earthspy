@@ -269,11 +269,11 @@ class EarthSpy:
         """
 
         # set number of cores provided by user
-        if self.multiprocessing and isinstance(self.nb_cores, (int, float)):
+        if self.multiprocessing and isinstance(nb_cores, (int, float)):
             self.nb_cores = nb_cores
 
         # keep two CPUs free to prevent overload
-        elif self.multiprocessing and self.nb_cores is None:
+        elif self.multiprocessing and nb_cores is None:
             self.nb_cores = cpu_count() - 2
 
         # if not multiprocessing, sequential processing
@@ -360,8 +360,6 @@ class EarthSpy:
 
             # list all available GEOJSON files
             json_files = glob.glob("data/*.geojson")
-
-            print(json_files)
 
             for json_file in json_files:
 
@@ -699,20 +697,25 @@ class EarthSpy:
     def list_requests(self) -> list:
         """ """
 
+        # loop over dates if direct download
         if self.download_mode == "D":
-            self.requests_list = [
+            requests_list = [
                 self.sentinelhub_request(date, self.split_boxes)
                 for date in self.query_date_range
             ]
 
+        # loop over dates and split boxes if Split-and-Merge download
         elif self.download_mode == "SM":
-            self.requests_list = [
+            requests_list = [
                 [
                     self.sentinelhub_request(date, split_box)
                     for date in self.query_date_range
                 ]
                 for split_box in self.split_boxes
             ]
+
+        # flatten list of requests
+        self.requests_list = [item for sublist in requests_list for item in sublist]
 
         return self.requests_list
 
@@ -760,6 +763,47 @@ class EarthSpy:
         )
 
         return shb_request
+
+    def send_sentinelhub_requests(self) -> None:
+        """Send the Sentinel Hub API request depending on user specifications (mainly
+        download mode and multiprocessing).
+        """
+
+        # list SentinelHub requests to send over
+        self.list_requests()
+
+        # store time and start time
+        if self.verbose:
+            start_time = time.time()
+            start_local_time = time.ctime(start_time)
+
+        # the actual Sentinel Hub download
+        outputs = shb.SentinelHubDownloadClient(config=self.config).download(
+            self.requests_list, max_threads=self.nb_cores
+        )
+
+        # store raw folders created by Sentinel Hub API
+        self.raw_filenames = [
+            r.get_filename_list()[0].split(os.sep)[0] for r in self.requests_list
+        ]
+
+        # change raw ambiguous file names
+        self.rename_output_files()
+
+        # if SM download mode, merge rasters back to fit initial bounding box
+        if self.download_mode == "SM":
+            self.merge_rasters()
+
+        # if verbose, print processing time
+        if self.verbose:
+            end_time = time.time()
+            end_local_time = time.ctime(end_time)
+            processing_time = (end_time - start_time) / 60
+            print("--- Processing time: %s minutes ---" % processing_time)
+            print("--- Start time: %s ---" % start_local_time)
+            print("--- End time: %s ---" % end_local_time)
+
+        return None
 
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
@@ -822,43 +866,6 @@ class EarthSpy:
         for name in os.listdir(self.store_folder):
             if os.path.isdir(os.path.join(self.store_folder, name)):
                 shutil.rmtree(f"{self.store_folder}/{name}")
-
-        return None
-
-    def send_sentinelhub_requests(self) -> None:
-        """Send the Sentinel Hub API request depending on user specifications (mainly
-        download mode and multiprocessing).
-        """
-
-        # store time and start time
-        if self.verbose:
-            start_time = time.time()
-            start_local_time = time.ctime(start_time)
-
-        outputs = shb.SentinelHubDownloadClient(config=self.config).download(
-            self.requests_list, max_threads=self.nb_cores
-        )
-
-        # store raw folders created by Sentinel Hub API
-        self.raw_filenames = [
-            r.get_filename_list()[0].split(os.sep)[0] for r in self.requests_list
-        ]
-
-        # change raw ambiguous file names
-        self.rename_output_files()
-
-        # if SM download mode, merge rasters back to fit initial bounding box
-        if self.download_mode == "SM":
-            self.merge_rasters()
-
-        # if verbose, print processing time
-        if self.verbose:
-            end_time = time.time()
-            end_local_time = time.ctime(end_time)
-            processing_time = (end_time - start_time) / 60
-            print("--- Processing time: %s minutes ---" % processing_time)
-            print("--- Start time: %s ---" % start_local_time)
-            print("--- End time: %s ---" % end_local_time)
 
         return None
 
