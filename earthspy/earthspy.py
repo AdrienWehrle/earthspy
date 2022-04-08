@@ -152,7 +152,7 @@ class EarthSpy:
 
         # set number of cores
         self.set_number_of_cores(nb_cores)
-        
+
         # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
@@ -271,7 +271,7 @@ class EarthSpy:
         # set number of cores provided by user
         if self.multiprocessing and isinstance(self.nb_cores, (int, float)):
             self.nb_cores = nb_cores
-            
+
         # keep two CPUs free to prevent overload
         elif self.multiprocessing and self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
@@ -835,20 +835,14 @@ class EarthSpy:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
-        # store raw folders created by Sentinel Hub API
-        raw_filenames = []
+        outputs = shb.SentinelHubDownloadClient(config=self.config).download(
+            self.requests_list, max_threads=self.nb_cores
+        )
 
-        if self.multiprocessing:
-    
-            outputs = shb.SentinelHubDownloadClient(config=self.config).download(self.requests_list, max_threads=self.nb_cores)
-                    # get raw files names for renaming
-                    if shb_requests is not None:
-                        raw_filenames.append(
-                            [
-                                r.get_filename_list()[0].split(os.sep)[0]
-                                for r in shb_requests
-                            ]
-                        )
+        # store raw folders created by Sentinel Hub API
+        self.raw_filenames = [
+            r.get_filename_list()[0].split(os.sep)[0] for r in self.requests_list
+        ]
 
         # change raw ambiguous file names
         self.rename_output_files()
