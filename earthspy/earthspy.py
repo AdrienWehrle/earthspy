@@ -141,7 +141,6 @@ class EarthSpy:
         # set processing attributes
         self.download_mode = download_mode
         self.multiprocessing = multiprocessing
-        self.nb_cores = nb_cores
         self.verbose = verbose
         self.remove_splitboxes = remove_splitboxes
 
@@ -151,6 +150,9 @@ class EarthSpy:
         self.get_satellite_name()
         self.get_data_collection_resolution()
 
+        # set number of cores
+        self.set_number_of_cores(nb_cores)
+        
         # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
         self.get_bounding_box(bounding_box)
@@ -259,17 +261,23 @@ class EarthSpy:
 
         return self.data_collection_resolution
 
-    def set_number_of_cores(self) -> int:
+    def set_number_of_cores(self, nb_cores) -> int:
         """Set number of cores if not specificed by user.
 
         :return: Number of cores to use in multiprocessing.
         :rtype: int
         """
 
+        # set number of cores provided by user
+        if self.multiprocessing and isinstance(self.nb_cores, (int, float)):
+            self.nb_cores = nb_cores
+            
         # keep two CPUs free to prevent overload
-        if self.nb_cores is None:
+        elif self.multiprocessing and self.nb_cores is None:
             self.nb_cores = cpu_count() - 2
-        elif cpu_count() == 1 or cpu_count() is None:
+
+        # if not multiprocessing, sequential processing
+        elif not self.multiprocessing:
             self.nb_cores = 1
 
         return self.nb_cores
@@ -688,33 +696,28 @@ class EarthSpy:
 
         return self.evaluation_script
 
-    def set_processing_iterator(self) -> str:
-        """Set multiprocessing iterator depending on the number of days and
-        split boxes to process to keep the CPUs busy.
-        """
+    def list_requests(self) -> list:
+        """ """
 
-        # parallelize on acquisition dates
-        if self.download_mode == "D" or len(self.query_date_range) > 5:
-            self.multiprocessing_strategy = "acquisition_dates"
-            self.multiprocessing_iterator = self.query_date_range
+        if self.download_mode == "D":
+            self.requests_list = [
+                self.sentinelhub_request(date, self.split_boxes)
+                for date in self.query_date_range
+            ]
 
-        # parallelize on split boxes
-        elif self.download_mode == "SM" and len(self.query_date_range) <= 5:
-            self.multiprocessing_strategy = "split_boxes"
-            self.multiprocessing_iterator = self.split_boxes
+        elif self.download_mode == "SM":
+            self.requests_list = [
+                [
+                    self.sentinelhub_request(date, split_box)
+                    for date in self.query_date_range
+                ]
+                for split_box in self.split_boxes
+            ]
 
-        # dont paralellize
-        else:
-            self.multiprocessing_strategy = "sequential"
-            self.multiprocessing_iterator = None
-
-        return self.multiprocessing_strategy
+        return self.requests_list
 
     def sentinelhub_request(
-        self,
-        multiprocessing_iterator: Union[
-            pd._libs.tslibs.timestamps.Timestamp, shb.geometry.BBox
-        ],
+        self, date: pd._libs.tslibs.timestamps.Timestamp, loc_bbox: shb.geometry.BBox
     ) -> list:
         """Send the Sentinel Hub API request with settings depending on the
         multiprocessing strategy.
@@ -731,83 +734,32 @@ class EarthSpy:
 
         """
 
-        # prepare iterators according to the multiprocessing strategy
-        if (
-            self.multiprocessing_strategy == "acquisition_dates"
-            or not self.multiprocessing
-        ):
-            date_string = multiprocessing_iterator.strftime("%Y-%m-%d")
-            sequential_iterator = self.split_boxes
+        # get bounding box size
+        loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
 
-        elif self.multiprocessing_strategy == "split_boxes":
-            loc_bbox = multiprocessing_iterator
-            sequential_iterator = self.query_date_range
+        # convert datetime to string
+        date_string = date.strftime("%Y-%m-%d")
 
-        # store Sentinel Hub requests
-        shb_requests = []
+        # build Sentinel Hub request
+        shb_request = shb.SentinelHubRequest(
+            data_folder=self.store_folder,
+            evalscript=self.evaluation_script,
+            input_data=[
+                shb.SentinelHubRequest.input_data(
+                    data_collection=self.data_collection,
+                    time_interval=(date_string, date_string),
+                    other_args={"processing": {"orthorectify": True}},
+                )
+            ],
+            responses=[
+                shb.SentinelHubRequest.output_response("default", shb.MimeType.TIFF),
+            ],
+            bbox=loc_bbox,
+            size=loc_size,
+            config=self.config,
+        )
 
-        # loop over sequential iterators
-        for si in sequential_iterator:
-
-            # set main variables according to the multiprocessing strategy
-            if (
-                self.multiprocessing_strategy == "acquisition_dates"
-                or not self.multiprocessing
-            ):
-                loc_bbox = si
-
-            elif self.multiprocessing_strategy == "split_boxes":
-                date_string = si.strftime("%Y-%m-%d")
-
-            # get bounding box size
-            loc_size = shb.bbox_to_dimensions(loc_bbox, resolution=self.resolution)
-
-            # build Sentinel Hub request
-            request = shb.SentinelHubRequest(
-                data_folder=self.store_folder,
-                evalscript=self.evaluation_script,
-                input_data=[
-                    shb.SentinelHubRequest.input_data(
-                        data_collection=self.data_collection,
-                        time_interval=(date_string, date_string),
-                        other_args={"processing": {"orthorectify": True}},
-                    )
-                ],
-                responses=[
-                    shb.SentinelHubRequest.output_response(
-                        "default", shb.MimeType.TIFF
-                    ),
-                ],
-                bbox=loc_bbox,
-                size=loc_size,
-                config=self.config,
-            )
-
-            # verbose statement
-            if self.verbose:
-                print(f"Downloading {date_string}...")
-
-            # send Sentinel Hub Request
-            if self.store_folder:
-                outputs = request.get_data(save_data=True)
-            else:
-                outputs = request.get_data()
-
-        # store request
-        shb_requests.append(request)
-
-        # if split boxes, use split box id as dictionnary key
-        if self.download_mode == "SM":
-            split_box_id = [
-                k for k, v in self.split_boxes_ids.items() if v == loc_bbox
-            ][0]
-            self.outputs[f"{date_string}_{split_box_id}"] = outputs
-
-        # if direct download, use date as dictionnary key
-        elif self.download_mode == "D":
-            self.outputs[date_string] = outputs
-
-        return shb_requests
+        return shb_request
 
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
@@ -883,29 +835,12 @@ class EarthSpy:
             start_time = time.time()
             start_local_time = time.ctime(start_time)
 
-        # set iterators
-        self.set_processing_iterator()
+        # store raw folders created by Sentinel Hub API
+        raw_filenames = []
 
         if self.multiprocessing:
-
-            # set number of cores to use depending on user input
-            self.set_number_of_cores()
-
-            # add support when Windows freezes to produce an executable (Move to Linux!)
-            freeze_support()
-
-            # save outputs
-            self.outputs = {}
-
-            # store raw folders created by Sentinel Hub API
-            raw_filenames = []
-
-            # start a pool of worker processes and give them jobs
-            with Pool(self.nb_cores) as p:
-                for shb_requests in p.map(
-                    self.sentinelhub_request, self.multiprocessing_iterator
-                ):
-
+    
+            outputs = shb.SentinelHubDownloadClient(config=self.config).download(self.requests_list, max_threads=self.nb_cores)
                     # get raw files names for renaming
                     if shb_requests is not None:
                         raw_filenames.append(
@@ -914,16 +849,6 @@ class EarthSpy:
                                 for r in shb_requests
                             ]
                         )
-
-        # if not multiprocessing, run in sequential
-        else:
-            requests = [
-                self.sentinelhub_request(date) for date in self.query_date_range
-            ]
-            raw_filenames = [f.split(os.sep)[0] for f in requests.get_filename_list()]
-
-        # flatten list of file name lists (coming from parallel processing)
-        self.raw_filenames = [item for sublist in raw_filenames for item in sublist]
 
         # change raw ambiguous file names
         self.rename_output_files()
