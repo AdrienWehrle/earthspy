@@ -714,12 +714,11 @@ class EarthSpy:
                 for split_box in self.split_boxes
             ]
 
-        # flatten list of requests
+        # create list of requests
         self.requests_list = [item for sublist in requests_list for item in sublist]
 
-        self.download_list = [
-            item.download_list[0] for sublist in self.requests_list for item in sublist
-        ]
+        # create list of download requests
+        self.download_list = [item.download_list[0] for item in self.requests_list]
 
         return self.requests_list
 
@@ -783,7 +782,7 @@ class EarthSpy:
 
         # the actual Sentinel Hub download
         outputs = shb.SentinelHubDownloadClient(config=self.config).download(
-            self.requests_list, max_threads=self.nb_cores
+            self.download_list, max_threads=self.nb_cores
         )
 
         # store raw folders created by Sentinel Hub API
