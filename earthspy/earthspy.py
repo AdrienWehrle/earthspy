@@ -9,6 +9,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 import glob
 import json
+from multiprocessing import cpu_count
 import numpy as np
 import os
 from osgeo_utils import gdal_merge
@@ -715,6 +716,10 @@ class EarthSpy:
 
         # flatten list of requests
         self.requests_list = [item for sublist in requests_list for item in sublist]
+
+        self.download_list = [
+            item.download_list[0] for sublist in self.requests_list for item in sublist
+        ]
 
         return self.requests_list
 
