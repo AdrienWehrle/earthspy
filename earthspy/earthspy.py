@@ -12,9 +12,10 @@ import json
 from multiprocessing import cpu_count
 import numpy as np
 import os
-from osgeo_utils import gdal_merge
 import pandas as pd
 from pathlib import Path
+import rasterio
+from rasterio.merge import merge
 import re
 import requests
 import sentinelhub as shb
@@ -901,16 +902,28 @@ class EarthSpy:
             # add download mode in file name
             date_output_filename = re.sub("_\d+_", "_SM_", date_output_filename)
 
-            # prepare GDAL parameters
-            parameters = (
-                ["", "-o", date_output_filename]
-                + ["-n", "0.0"]
-                + date_output_files
-                + ["-co", "COMPRESS=LZW"]
+            # open files to merge
+            rasters_to_merge = [rasterio.open(file) for file in date_output_files]
+
+            # extract metadata
+            output_meta = rasters_to_merge[0].meta.copy()
+
+            # merge rasters
+            mosaic, output_transform = rasterio.merge.merge(rasters_to_merge)
+
+            # prepare mosaic metadata
+            output_meta.update(
+                {
+                    "driver": "GTiff",
+                    "height": mosaic.shape[1],
+                    "width": mosaic.shape[2],
+                    "transform": output_transform,
+                }
             )
 
-            # merge with GDAL
-            gdal_merge.main(parameters)
+            # write mosaic
+            with rasterio.open(date_output_filename, "w", **output_meta) as dst:
+                dst.write(mosaic)
 
             # save file name of merged raster
             self.output_filenames_renamed.append(date_output_filename)
