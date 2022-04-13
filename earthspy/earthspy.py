@@ -781,7 +781,7 @@ class EarthSpy:
             start_local_time = time.ctime(start_time)
 
         # the actual Sentinel Hub download
-        outputs = shb.SentinelHubDownloadClient(config=self.config).download(
+        self.outputs = shb.SentinelHubDownloadClient(config=self.config).download(
             self.download_list, max_threads=self.nb_cores
         )
 
@@ -806,7 +806,7 @@ class EarthSpy:
             print("--- Start time: %s ---" % start_local_time)
             print("--- End time: %s ---" % end_local_time)
 
-        return None
+        return self.outputs
 
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
