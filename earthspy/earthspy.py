@@ -15,7 +15,6 @@ import os
 import pandas as pd
 from pathlib import Path
 import rasterio
-from rasterio.merge import merge
 import re
 import requests
 import sentinelhub as shb
