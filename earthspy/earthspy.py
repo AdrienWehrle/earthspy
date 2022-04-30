@@ -15,6 +15,7 @@ import os
 import pandas as pd
 from pathlib import Path
 import rasterio
+from rasterio.merge import merge
 import re
 import requests
 import sentinelhub as shb
@@ -908,7 +909,7 @@ class EarthSpy:
             output_meta = rasters_to_merge[0].meta.copy()
 
             # merge rasters
-            mosaic, output_transform = rasterio.merge.merge(rasters_to_merge)
+            mosaic, output_transform = merge(rasters_to_merge)
 
             # prepare mosaic metadata
             output_meta.update(
