@@ -49,7 +49,6 @@ extensions = [
 intersphinx_mapping = {
     "rasterio": ("https://rasterio.readthedocs.io/en/latest", None),
     "numpy": ("https://numpy.org/doc/stable", None),
-    "matplotlib": ("https://matplotlib.org/stable", None),
 }
 
 sphinx_gallery_conf = {
