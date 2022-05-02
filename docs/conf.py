@@ -37,7 +37,6 @@ master_doc = "index"
 extensions = [
     "sphinx.ext.autodoc",  # Create the API documentation automatically
     "sphinx.ext.viewcode",  # Create the "[source]" button in the API to show the source code.
-    "matplotlib.sphinxext.plot_directive",  # Render matplotlib figures from code.
     "sphinx.ext.autosummary",  # Create API doc summary texts from the docstrings.
     "sphinx.ext.inheritance_diagram",  # For class inheritance diagrams (see coregistration.rst).
     "sphinx_autodoc_typehints",  # Include type hints in the API documentation.
