@@ -43,7 +43,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
       - name: Run tests
+        shell: bash -l {0}
         run: |
-          conda install pytest safety numpy
+          conda install pytest safety
           $CONDA/bin/pytest . || true
-          safety check
+          $CONDA/bin/safety check
