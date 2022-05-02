@@ -45,8 +45,15 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          pip install pytest safety
-          pytest . || true
+          pip install pytest
+          pytest .
         env:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
+          
+      - name: Safety check
+        shell: bash -l {0}
+        run: |
+          pip install safety
+          safety check
+
