@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   miniconda:
-    name: Miniconda ${{ matrix.os }}
+    name: Setup and test
     runs-on: ${{ matrix.os }}
     strategy:
         matrix:
@@ -16,25 +16,24 @@ jobs:
           environment-file: environment.yml
           python-version: 3.8
           auto-activate-base: true
+          
       - shell: bash -l {0}
         run: |
           conda info
           conda list
+          
       - name: Install earthspy
         shell: bash -l {0}
         run: |
             pip install -e .
             
-  run-lint:
-    runs-on: ubuntu-latest
-    steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+           runs-on: ubuntu-latest       uses: actions/checkout@v2
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
-          fetch-depth: 0
-
-      - name: Lint Code Base
+          fetch-depth: 0 
+          
+      - name: Lint code base
         uses: github/super-linter/slim@v4.9.0
         env:
           VALIDATE_ALL_CODEBASE: true
@@ -42,12 +41,10 @@ jobs:
           VALIDATE_YAML: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-  run_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - run: pip install pytest safety
-      - run: pytest . || true
-      - run: safety check
+            
+      - name: Run tests
+        uses: actions/checkout@v2
+        uses: actions/setup-python@v2
+        run: pip install pytest safety
+        run: pytest . || true
+        run: safety check
