@@ -44,6 +44,6 @@ jobs:
             
       - name: Run tests
         run: |
-          pip install pytest safety
-          pytest . || true
+          conda install pytest safety
+          $CONDA/bin/pytest . || true
           safety check
