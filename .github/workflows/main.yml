@@ -48,7 +48,6 @@ jobs:
           pip install pytest safety
           pytest . || true
           safety check
-          
-   env:
-        SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
-        SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
+        env:
+          SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
+          SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
