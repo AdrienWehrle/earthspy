@@ -131,7 +131,7 @@ class TestEarthspy:
     def test_set_number_of_cores(self) -> None:
         """Test selection of number of cores for multiprocessing"""
 
-        self.t1.set_number_of_cores()
+        self.t1.set_number_of_cores(None)
         # check if number of cores was set correctly
         assert isinstance(self.t1.nb_cores, int)
 
@@ -256,17 +256,6 @@ class TestEarthspy:
         es2 = self.t1.get_evaluation_script(self.test_evalscript)
         # check that passed evalscript was set correctly
         assert isinstance(es2, str)
-
-    def test_set_processing_iterator(self) -> None:
-        """Test multiprocessing strategy selection"""
-
-        pi1 = self.t1.set_processing_iterator()
-        # check that processing iterator was set properly
-        assert isinstance(pi1, str)
-        # check that split boxes are indeed used as iterators
-        assert self.t1.multiprocessing_iterator == self.t1.split_boxes
-        # check that multiprocessing strategy was set
-        assert isinstance(self.t1.multiprocessing_strategy, str)
 
     def test_sentinelhub_request(self) -> None:
         """Test API request generation"""

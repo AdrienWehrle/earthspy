@@ -5,7 +5,7 @@
 [[https://lgtm.com/projects/g/AdrienWehrle/earthspy/alerts/][https://img.shields.io/lgtm/alerts/g/AdrienWehrle/earthspy.svg?logo=lgtm&logoWidth=18]]
 [[https://lgtm.com/projects/g/AdrienWehrle/earthspy/context:python][https://img.shields.io/lgtm/grade/python/g/AdrienWehrle/earthspy.svg?logo=lgtm&logoWidth=18]]
 
-* earthspy
+* earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia: :moon:
 
 =earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated NRT applications. Just like a spy!
 
@@ -28,10 +28,24 @@ As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 
 Currently the easiest way to install =earthspy= is via [[https://github.com/][Github]] and [[https://pip.pypa.io/en/stable/][pip]]:
 #+begin_src shell :results verbatim
+
+# clone repository
 git clone git@github.com:AdrienWehrle/earthspy.git
+
+# create conda environment
+conda env create -f environment.yml
+
+# move into earthspy directory
 cd earthspy
+
+# install earthspy
 pip install -e .
+
 #+end_src
+
+- Using =pip= together with =conda= is usually a bad idea, but here =conda= installs all the dependencies and =pip= only sets up the associated paths, that's all! :+1:
+- Installation can be sped up using the fast cross-platform package manager [[https://mamba.readthedocs.io/en/latest/][mamba]] (reimplementation of the conda package manager in C++), simply use =mamba= instead of =conda= in the instructions above!
+
 
 * Usage
 At present =earthspy= can be run by users within a couple of lines of Python code that execute three main tasks:
