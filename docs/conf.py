@@ -41,7 +41,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",  # For class inheritance diagrams (see coregistration.rst).
     "sphinx_autodoc_typehints",  # Include type hints in the API documentation.
     "sphinxcontrib.programoutput",
-    "sphinx_gallery.gen_gallery",  # Examples gallery
+    # "sphinx_gallery.gen_gallery",  # Examples gallery
     "sphinx.ext.intersphinx",
 ]
 
