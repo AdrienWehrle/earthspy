@@ -1,0 +1,23 @@
+﻿earthspy
+========
+
+.. automodule:: earthspy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
