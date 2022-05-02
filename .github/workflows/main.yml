@@ -28,7 +28,7 @@ jobs:
             pip install -e .
             
       - name: Checkout code
-           runs-on: ubuntu-latest       uses: actions/checkout@v2
+        uses: actions/checkout@v2
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0 
