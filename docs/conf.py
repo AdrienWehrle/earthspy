@@ -51,18 +51,18 @@ intersphinx_mapping = {
 }
 
 sphinx_gallery_conf = {
-    "examples_dirs": os.path.join(
-        os.path.dirname(__file__), "../", "../", "examples"
-    ),  # path to your example scripts
-    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
-    "inspect_global_variables": True,  # Make links to the class/function definitions.
+    # "examples_dirs": os.path.join(
+    #     os.path.dirname(__file__), "../", "../", "examples"
+    # ),  # path to your example scripts
+    # "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+    # "inspect_global_variables": True,  # Make links to the class/function definitions.
     "reference_url": {
         # The module you locally document uses None
         "earthspy": None,
     },
     "filename_pattern": r".*\.py",  # Run all python files in the gallery (by default, only files starting with "plot_" are run)
     # directory where function/class granular galleries are stored
-    "backreferences_dir": "gen_modules/backreferences",
+    # "backreferences_dir": "gen_modules/backreferences",
     "doc_module": (
         "earthspy"
     ),  # which function/class levels are used to create galleries
