@@ -20,7 +20,7 @@ jobs:
       - shell: bash -l {0}
         run: |
           conda info
-          conda listtomorrow at 9:45 we will have a 
+          conda list
           
       - name: Install earthspy
         shell: bash -l {0}
