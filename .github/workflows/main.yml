@@ -2,20 +2,25 @@ name: CI
 on: [push]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            os: ["ubuntu-latest", "windows-latest"]
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Setup conda environment
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda env update --file environment.yml --name base
-        $CONDA/bin/conda activate base
-    - name: Install earthspy
-      run: |
-        pip install -e .
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test
+          environment-file: environment.yml
+          python-version: 3.8
+          auto-activate-base: true
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+      - name: Install earthspy
+        shell: bash -l {0}
+        run: |
+            pip install -e .
