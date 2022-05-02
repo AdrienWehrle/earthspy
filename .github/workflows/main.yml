@@ -51,5 +51,6 @@ jobs:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
-      - name: Security vulnerabilities scan
-        uses: aufdenpunkt/python-safety-check@master
+      - name: Safety check
+        uses: AlicanAkkus/pinder-action@0.1
+
