@@ -20,7 +20,7 @@ jobs:
       - shell: bash -l {0}
         run: |
           conda info
-          conda list
+          conda listtomorrow at 9:45 we will have a 
           
       - name: Install earthspy
         shell: bash -l {0}
@@ -46,5 +46,5 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install pytest safety
-          $CONDA/bin/pytest . || true
-          $CONDA/bin/safety check
+          pytest . || true
+          safety check
