@@ -7,18 +7,18 @@
 
 * earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia: :moon:
 
-=earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated NRT applications. Just like a spy!
+=earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications. Just like a spy!
 
 Some useful capabilities: 
   - Data download in multiprocessing
   - Data download at optimized resolutions with the Direct (D) download mode 
   - Data download at native resolutions with the Split and Merge (SM) downlodad mode
-  - Data storage with efficient structure
+  - Data storage with efficient structure and file naming
 
 As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
 
 * Table of Contents                               :toc_2:noexport:
-- [[#earthspy][earthspy]]
+- [[#earthspy-%EF%B8%8F-earth_africa-earth_americas-earth_asia][earthspy]]
 - [[#installation][Installation]]
 - [[#usage][Usage]]
 - [[#operational-near-real-time-nrt-deployment][Operational Near Real-Time (NRT) deployment]]
@@ -26,7 +26,7 @@ As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 
 * Installation
 
-Currently the easiest way to install =earthspy= is via [[https://github.com/][Github]] and [[https://pip.pypa.io/en/stable/][pip]]:
+Currently, it is recommended to install =earthspy= via [[https://github.com/][Github]], with [[https://docs.conda.io/en/latest/][conda]] and [[https://pip.pypa.io/en/stable/][pip]]:
 #+begin_src shell :results verbatim
 
 # clone repository
