@@ -32,11 +32,14 @@ Currently, it is recommended to install =earthspy= via [[https://github.com/][Gi
 # clone repository
 git clone git@github.com:AdrienWehrle/earthspy.git
 
+# move into earthspy directory
+cd earthspy
+
 # create conda environment
 conda env create -f environment.yml
 
-# move into earthspy directory
-cd earthspy
+# activate conda environment
+conda activate earthspy
 
 # install earthspy
 pip install -e .
