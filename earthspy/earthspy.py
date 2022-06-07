@@ -75,6 +75,7 @@ class EarthSpy:
         time_interval: Union[int, tuple],
         data_collection: str,
         evaluation_script: Union[None, str] = None,
+        algorithm: Union[None, str] = None,
         resolution: Union[None, int] = None,
         store_folder: Union[None, str] = None,
         multiprocessing: bool = True,
@@ -98,6 +99,11 @@ class EarthSpy:
           URL to a custom script on https://custom-scripts.sentinel-hub.com/. If
           not specified, a default script is used.
         :type evaluation_script: str
+
+        :param algorithm: Name of the algorithm to apply (some algorithms
+          would require a large number of variables to be set by the user, we
+          therefore decided to encapsule them).
+        :type algorithm: Union[None, str], optional
 
         :param data_collection: Data collection name. Check
           shb.DataCollection.get_available_collections() for a list of all
@@ -144,6 +150,7 @@ class EarthSpy:
         self.multiprocessing = multiprocessing
         self.verbose = verbose
         self.remove_splitboxes = remove_splitboxes
+        self.algorithm = algorithm
 
         # set query attributes
         self.data_collection_str = data_collection
@@ -189,12 +196,21 @@ class EarthSpy:
         """
 
         # set Sentinel Hub data collection object
-        self.data_collection = shb.DataCollection[self.data_collection_str]
+        if self.algorithm == "SICE":
+            self.data_collection = shb.DataCollection.SENTINEL3_OLCI
+        else:
+            self.data_collection = shb.DataCollection[self.data_collection_str]
 
         return self.data_collection
 
     def get_available_data(self) -> list:
         """Search for available data with STAC REST API before download."""
+
+        # set Sentinel-3 specific base URL of deployment
+        if self.data_collection_str == "SENTINEL3_OLCI":
+            self.config.sh_base_url = shb.DataCollection[
+                self.data_collection_str
+            ].service_url
 
         # search catalog based on user inputs
         search_iterator = [
@@ -765,6 +781,60 @@ class EarthSpy:
             size=loc_size,
             config=self.config,
         )
+
+        if self.algorithm == "SICE":
+
+            shb.SentinelHubRequest(
+                data_folder=self.store_folder,
+                evalscript=self.evaluation_script,
+                input_data=[
+                    shb.SentinelHubRequest.input_data(
+                        data_collection=shb.DataCollection.DEM_COPERNICUS_30,
+                        identifier="COP_30",
+                        upsampling="NEAREST",
+                        downsampling="NEAREST",
+                    ),
+                    shb.SentinelHubRequest.input_data(
+                        data_collection=shb.DataCollection.SENTINEL3_OLCI,
+                        identifier="OLCI",
+                        time_interval=(date_string, date_string),
+                        upsampling="NEAREST",
+                        downsampling="NEAREST",
+                    ),
+                ],
+                responses=[
+                    shb.SentinelHubRequest.output_response(
+                        "r_TOA_01", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "r_TOA_06", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "r_TOA_17", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "r_TOA_21", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "snow_grain_diameter", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "snow_specific_surface_area", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "diagnostic_retrieval", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "albedo_bb_planar_sw", shb.MimeType.TIFF
+                    ),
+                    shb.SentinelHubRequest.output_response(
+                        "albedo_bb_spherical_sw", shb.MimeType.TIFF
+                    ),
+                ],
+                bbox=loc_bbox,
+                size=loc_size,
+                config=self.config,
+            )
 
         return shb_request
 
