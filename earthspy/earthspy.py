@@ -60,9 +60,6 @@ class EarthSpy:
         # setup Sentinel Hub connection
         self.config = shb.SHConfig()
 
-        # setup Sentinel Hub Catalog API (with STAC Specification)
-        self.catalog = shb.SentinelHubCatalog(config=self.config)
-
         # set credentials
         self.config.sh_client_id = self.CLIENT_ID
         self.config.sh_client_secret = self.CLIENT_SECRET
@@ -211,6 +208,9 @@ class EarthSpy:
             self.config.sh_base_url = shb.DataCollection[
                 self.data_collection_str
             ].service_url
+
+        # setup Sentinel Hub Catalog API (with STAC Specification)
+        self.catalog = shb.SentinelHubCatalog(config=self.config)
 
         # search catalog based on user inputs
         search_iterator = [
