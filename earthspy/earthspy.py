@@ -784,7 +784,7 @@ class EarthSpy:
 
         if self.algorithm == "SICE":
 
-            shb.SentinelHubRequest(
+            shb_request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
                 evalscript=self.evaluation_script,
                 input_data=[
