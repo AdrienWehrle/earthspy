@@ -9,17 +9,17 @@ from collections import Counter
 from datetime import datetime, timedelta
 import glob
 import json
-from multiprocessing import cpu_count
 import numpy as np
+import objectpath
 import os
 import pandas as pd
 from pathlib import Path
 import rasterio
 from rasterio.merge import merge
-import re
 import requests
 import sentinelhub as shb
 import shutil
+import tarfile
 import time
 from typing import Union, Tuple
 import validators
@@ -60,9 +60,6 @@ class EarthSpy:
         # setup Sentinel Hub connection
         self.config = shb.SHConfig()
 
-        # setup Sentinel Hub Catalog API (with STAC Specification)
-        self.catalog = shb.SentinelHubCatalog(config=self.config)
-
         # set credentials
         self.config.sh_client_id = self.CLIENT_ID
         self.config.sh_client_secret = self.CLIENT_SECRET
@@ -75,10 +72,9 @@ class EarthSpy:
         time_interval: Union[int, tuple],
         data_collection: str,
         evaluation_script: Union[None, str] = None,
+        algorithm: Union[None, str] = None,
         resolution: Union[None, int] = None,
         store_folder: Union[None, str] = None,
-        multiprocessing: bool = True,
-        nb_cores: Union[None, int] = None,
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
@@ -99,6 +95,11 @@ class EarthSpy:
           not specified, a default script is used.
         :type evaluation_script: str
 
+        :param algorithm: Name of the algorithm to apply (some algorithms
+          would require a large number of variables to be set by the user, we
+          therefore decided to encapsule them).
+        :type algorithm: Union[None, str], optional
+
         :param data_collection: Data collection name. Check
           shb.DataCollection.get_available_collections() for a list of all
           collections currently available.
@@ -113,15 +114,6 @@ class EarthSpy:
           defaults to None. If not specified, path set to local
           ~/Downloads/earthspy.
         :type store_folder: Union[None, str], optional
-
-        :param multiprocessing: Whether or not to download in multiprocessing,
-          defaults to True.
-        :type multiprocessing: bool, optional
-
-        :param nb_cores: Number of cores to use in multiprocessing, defaults to
-          None. If not specified, set to the number of cores available minus 2
-          (to avoid CPU overload).
-        :type nb_cores: Union[None, int], optional
 
         :param download_mode: Whether to perform a Direct (D) or Split and Merge
           (SM) download, defaults to "SM". D uses the maximum resolution
@@ -141,18 +133,15 @@ class EarthSpy:
 
         # set processing attributes
         self.download_mode = download_mode
-        self.multiprocessing = multiprocessing
         self.verbose = verbose
         self.remove_splitboxes = remove_splitboxes
+        self.algorithm = algorithm
 
         # set query attributes
         self.data_collection_str = data_collection
         self.get_data_collection()
         self.get_satellite_name()
         self.get_data_collection_resolution()
-
-        # set number of cores
-        self.set_number_of_cores(nb_cores)
 
         # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
@@ -189,12 +178,27 @@ class EarthSpy:
         """
 
         # set Sentinel Hub data collection object
-        self.data_collection = shb.DataCollection[self.data_collection_str]
+        if self.algorithm == "SICE":
+            self.data_collection = shb.DataCollection.SENTINEL3_OLCI
+        else:
+            self.data_collection = shb.DataCollection[self.data_collection_str]
 
         return self.data_collection
 
     def get_available_data(self) -> list:
         """Search for available data with STAC REST API before download."""
+
+        # create a copy of shb configuration to get catalog
+        self.catalog_config = self.config.copy()
+
+        # set Sentinel-3 specific base URL of deployment
+        if self.data_collection_str == "SENTINEL3_OLCI":
+            self.catalog_config.sh_base_url = shb.DataCollection[
+                self.data_collection_str
+            ].service_url
+
+        # setup Sentinel Hub Catalog API (with STAC Specification)
+        self.catalog = shb.SentinelHubCatalog(config=self.catalog_config)
 
         # search catalog based on user inputs
         search_iterator = [
@@ -261,27 +265,6 @@ class EarthSpy:
                 )
 
         return self.data_collection_resolution
-
-    def set_number_of_cores(self, nb_cores) -> int:
-        """Set number of cores if not specificed by user.
-
-        :return: Number of cores to use in multiprocessing.
-        :rtype: int
-        """
-
-        # set number of cores provided by user
-        if self.multiprocessing and isinstance(nb_cores, (int, float)):
-            self.nb_cores = nb_cores
-
-        # keep two CPUs free to prevent overload
-        elif self.multiprocessing and nb_cores is None:
-            self.nb_cores = cpu_count() - 2
-
-        # if not multiprocessing, sequential processing
-        elif not self.multiprocessing:
-            self.nb_cores = 1
-
-        return self.nb_cores
 
     def get_date_range(
         self, time_interval: Union[int, list]
@@ -409,30 +392,23 @@ class EarthSpy:
         """
 
         # set Downloads folder as default main store folder
-        if store_folder is None:
-            store_folder = f"{Path.home()}/Downloads"
+        if not store_folder:
 
-        # create folder if doesnt exist
+            store_folder = f"{Path.home()}/Downloads/earthspy"
+
+            # set earthspy folder as default sub store folder
+            if self.bounding_box_name:
+                store_folder += f"{os.sep}{self.bounding_box_name}"
+
+            if self.algorithm:
+                store_folder += f"{os.sep}{self.algorithm}"
+
+        # create subfolder if doesnt exist
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
-        # set earthspy folder as default sub store folder
-        if self.bounding_box_name is None:
-            folder_name = "earthspy"
-
-        # or use bounding box name (if available) to prevent overwrite
-        else:
-            folder_name = self.bounding_box_name
-
-        # create full path
-        full_path = f"{store_folder}/{folder_name}"
-
-        # create subfolder if doesnt exist
-        if not os.path.exists(full_path):
-            os.makedirs(full_path)
-
         # set attribute
-        self.store_folder = full_path
+        self.store_folder = store_folder
 
         return self.store_folder
 
@@ -766,9 +742,50 @@ class EarthSpy:
             config=self.config,
         )
 
+        if self.algorithm == "SICE":
+
+            self.response_files = [
+                "r_TOA_01",
+                "r_TOA_06",
+                "r_TOA_17",
+                "r_TOA_21",
+                "snow_grain_diameter",
+                "snow_specific_surface_area",
+                "diagnostic_retrieval",
+                "albedo_bb_planar_sw",
+                "albedo_bb_spherical_sw",
+            ]
+
+            shb_request = shb.SentinelHubRequest(
+                data_folder=self.store_folder,
+                evalscript=self.evaluation_script,
+                input_data=[
+                    shb.SentinelHubRequest.input_data(
+                        data_collection=shb.DataCollection.DEM_COPERNICUS_30,
+                        identifier="COP_30",
+                        upsampling="NEAREST",
+                        downsampling="NEAREST",
+                    ),
+                    shb.SentinelHubRequest.input_data(
+                        data_collection=shb.DataCollection.SENTINEL3_OLCI,
+                        identifier="OLCI",
+                        time_interval=(date_string, date_string),
+                        upsampling="NEAREST",
+                        downsampling="NEAREST",
+                    ),
+                ],
+                responses=[
+                    shb.SentinelHubRequest.output_response(rf, shb.MimeType.TIFF)
+                    for rf in self.response_files
+                ],
+                bbox=loc_bbox,
+                size=loc_size,
+                config=self.config,
+            )
+
         return shb_request
 
-    def send_sentinelhub_requests(self) -> None:
+    def send_sentinelhub_requests(self) -> list:
         """Send the Sentinel Hub API request depending on user specifications (mainly
         download mode and multiprocessing).
         """
@@ -783,11 +800,11 @@ class EarthSpy:
 
         # the actual Sentinel Hub download
         self.outputs = shb.SentinelHubDownloadClient(config=self.config).download(
-            self.download_list, max_threads=self.nb_cores
+            self.download_list, max_threads=20
         )
 
         # store raw folders created by Sentinel Hub API
-        self.raw_filenames = [
+        self.raw_folder_names = [
             r.get_filename_list()[0].split(os.sep)[0] for r in self.requests_list
         ]
 
@@ -809,6 +826,27 @@ class EarthSpy:
 
         return self.outputs
 
+    def extract_sentinelhub_responses(self, folders: list) -> None:
+        """Extract all members of a Tape ARchive produced by the Sentinel Hub
+        API.
+
+        :param folders: List of folders containing outputs.
+        :type folders: list
+        """
+
+        for folder in folders:
+
+            # open Tape ARchive file produced by Sentinel Hub API
+            tar = tarfile.open(f"{folder}/response.tar", "r:")
+
+            # extract all members from the archive
+            tar.extractall(path=folder)
+
+            # close the TAR file
+            tar.close()
+
+        return None
+
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
         services.  Files are renamed using the acquisition date and the data
@@ -817,7 +855,11 @@ class EarthSpy:
         """
 
         # get raw folders created by Sentinel Hub API
-        folders = [f"{self.store_folder}/{fn}" for fn in self.raw_filenames]
+        folders = [f"{self.store_folder}/{fn}" for fn in self.raw_folder_names]
+
+        # extract outputs stored in archives
+        if self.algorithm == "SICE":
+            self.extract_sentinelhub_responses(folders)
 
         # store new file names
         self.output_filenames = []
@@ -828,10 +870,24 @@ class EarthSpy:
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
 
+            # create a tree object to facilitate queries
+            request_tree = objectpath.Tree(request)
+
             # extract date of acquisition
-            date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
-                "from"
-            ][:10]
+            date = list(request_tree.execute("$..timeRange"))[0]["from"].split("T")[0]
+
+            # if SICE, store files in date subfolders if multiple outputs
+            if self.algorithm == "SICE":
+
+                # build folder name
+                date_folder = f"{self.store_folder}/{date}"
+
+                # create folder if doesn't exist
+                if not os.path.exists(date_folder):
+                    os.makedirs(date_folder)
+
+                # list all output files available for date
+                date_files = sorted(glob.glob(f"{folder}/*.tif"))
 
             # if D download mode, set file name using date and data collection
             if self.download_mode == "D":
@@ -841,12 +897,25 @@ class EarthSpy:
                     f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
 
+                # If SICE, don't rename file but move to date folder
+                if self.algorithm == "SICE":
+
+                    for f in date_files:
+
+                        # include date in path
+                        os.rename(
+                            f, f"{self.store_folder}/{date}/{f.split(os.sep)[-1]}"
+                        )
+
+                        # store output file name
+                        self.output_filenames.append(f)
+
             # if SM download mode, set file name using date, data collection and box id
             elif self.download_mode == "SM":
 
                 # recreate split box
                 split_box = shb.BBox(
-                    request["payload"]["input"]["bounds"]["bbox"],
+                    list(request_tree.execute("$..bbox")),
                     crs=self.bounding_box_UTM.crs,
                 )
 
@@ -858,17 +927,43 @@ class EarthSpy:
                 # build new file name
                 new_filename = (
                     f"{self.store_folder}/"
-                    + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
+                    + f"{date}_{self.data_collection_str}_{split_box_id}.tif"
                 )
 
+                # if SICE, add split box id in all names and move to date folder
+                if self.algorithm == "SICE":
+
+                    for f in date_files:
+
+                        # extract absolute path
+                        absolute_file_name = f.split(os.sep)[-1]
+                        new_absolute_file_name = absolute_file_name.replace(
+                            ".tif", f"_{split_box_id}.tif"
+                        )
+
+                        # include date in path
+                        new_full_file_name = (
+                            f"{self.store_folder}/{date}/{new_absolute_file_name}"
+                        )
+
+                        # rename file
+                        os.rename(f, new_full_file_name)
+
+                        # store output file name
+                        self.output_filenames.append(new_full_file_name)
+
+            # rename file using new file name
             if os.path.exists(f"{folder}/response.tiff"):
-                # rename file using new file name
+
                 os.rename(f"{folder}/response.tiff", new_filename)
                 self.output_filenames.append(new_filename)
 
-        # remove raw storage folders
+        # remove raw storage folders (and not date folders!)
         for name in os.listdir(self.store_folder):
-            if os.path.isdir(os.path.join(self.store_folder, name)):
+
+            if (
+                os.path.isdir(os.path.join(self.store_folder, name))
+            ) and "-" not in name:
                 shutil.rmtree(f"{self.store_folder}/{name}")
 
         return None
@@ -879,8 +974,11 @@ class EarthSpy:
         the different rasters have been merged.
         """
 
-        # extract dates from file names
-        dates = [f.split(os.sep)[-1].split("_")[0] for f in self.output_filenames]
+        # extract dates from file or folder names (depending on algorithm)
+        if self.algorithm == "SICE":
+            dates = [f.split(os.sep)[-2] for f in self.output_filenames]
+        else:
+            dates = [f.split(os.sep)[-1].split("_")[0] for f in self.output_filenames]
 
         # get distinct dates because several split boxes a day
         distinct_dates = list(Counter(dates).keys())
@@ -888,49 +986,61 @@ class EarthSpy:
         # store new file names
         self.output_filenames_renamed = []
 
-        # merge rasters for each distinct date
+        # merge rasters for each distinct date (work with distinct dates because
+        # of different trees depending on the algorithm used)
         for date in distinct_dates:
 
-            # select only files matching acquisition date
+            # select files matching acquisition date only
             date_output_files = [f for f in self.output_filenames if date in f]
 
-            # set file name ofx merged raster
-            date_output_filename = (
-                date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
-            )
+            # loop over response files if multiple ones (they all need to be
+            # merged, but only to their respective boxes)
+            if self.algorithm == "SICE":
+                file_iterator = self.response_files
+            else:
+                # set to tif to select all files (but keep a general file_iterator)
+                file_iterator = ["tif"]
 
-            # add download mode in file name
-            date_output_filename = re.sub("_\d+_", "_SM_", date_output_filename)
+            for pattern in file_iterator:
 
-            # open files to merge
-            rasters_to_merge = [rasterio.open(file) for file in date_output_files]
+                date_response_files = [f for f in date_output_files if pattern in f]
 
-            # extract metadata
-            output_meta = rasters_to_merge[0].meta.copy()
+                # set file name of merged raster: replace split box id by mosaic
+                # and add download method name (SM)
+                date_output_filename = date_response_files[0].replace(
+                    "_0.tif",
+                    "_SM_mosaic.tif",
+                )
 
-            # merge rasters
-            mosaic, output_transform = merge(rasters_to_merge)
+                # open files to merge
+                rasters_to_merge = [rasterio.open(file) for file in date_response_files]
 
-            # prepare mosaic metadata
-            output_meta.update(
-                {
-                    "driver": "GTiff",
-                    "height": mosaic.shape[1],
-                    "width": mosaic.shape[2],
-                    "transform": output_transform,
-                }
-            )
+                # extract metadata
+                output_meta = rasters_to_merge[0].meta.copy()
 
-            # write mosaic
-            with rasterio.open(date_output_filename, "w", **output_meta) as dst:
-                dst.write(mosaic)
+                # merge rasters
+                mosaic, output_transform = merge(rasters_to_merge)
 
-            # save file name of merged raster
-            self.output_filenames_renamed.append(date_output_filename)
+                # prepare mosaic metadata
+                output_meta.update(
+                    {
+                        "driver": "GTiff",
+                        "height": mosaic.shape[1],
+                        "width": mosaic.shape[2],
+                        "transform": output_transform,
+                    }
+                )
 
-            # remove split boxes to keep only the mosaic
-            if self.remove_splitboxes:
-                for file in date_output_files:
-                    os.remove(file)
+                # write mosaic
+                with rasterio.open(date_output_filename, "w", **output_meta) as dst:
+                    dst.write(mosaic)
+
+                # save file name of merged raster
+                self.output_filenames_renamed.append(date_output_filename)
+
+                # remove split boxes to keep only the mosaic
+                if self.remove_splitboxes:
+                    for file in date_response_files:
+                        os.remove(file)
 
         return None
