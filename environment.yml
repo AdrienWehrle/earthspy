@@ -110,6 +110,7 @@ dependencies:
   - numexpr=2.8.1=py38hecfb737_0
   - numpy=1.22.3=py38h99721a1_2
   - oauthlib=3.2.0=pyhd8ed1ab_0
+  - objectpath=0.6.1=py39hf3d152e_3
   - olefile=0.46=pyh9f0ad1d_1
   - openjpeg=2.4.0=hb52868f_1
   - openssl=3.0.2=h166bdaf_1
