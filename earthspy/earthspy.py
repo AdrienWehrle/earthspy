@@ -11,6 +11,7 @@ import glob
 import json
 from multiprocessing import cpu_count
 import numpy as np
+import objectpath
 import os
 import pandas as pd
 from pathlib import Path
@@ -20,6 +21,7 @@ import re
 import requests
 import sentinelhub as shb
 import shutil
+import tarfile
 import time
 from typing import Union, Tuple
 import validators
@@ -203,14 +205,17 @@ class EarthSpy:
     def get_available_data(self) -> list:
         """Search for available data with STAC REST API before download."""
 
+        # create a copy of shb configuration to get catalog
+        self.catalog_config = self.config.copy()
+
         # set Sentinel-3 specific base URL of deployment
         if self.data_collection_str == "SENTINEL3_OLCI":
-            self.config.sh_base_url = shb.DataCollection[
+            self.catalog_config.sh_base_url = shb.DataCollection[
                 self.data_collection_str
             ].service_url
 
         # setup Sentinel Hub Catalog API (with STAC Specification)
-        self.catalog = shb.SentinelHubCatalog(config=self.config)
+        self.catalog = shb.SentinelHubCatalog(config=self.catalog_config)
 
         # search catalog based on user inputs
         search_iterator = [
@@ -838,7 +843,7 @@ class EarthSpy:
 
         return shb_request
 
-    def send_sentinelhub_requests(self) -> None:
+    def send_sentinelhub_requests(self) -> list:
         """Send the Sentinel Hub API request depending on user specifications (mainly
         download mode and multiprocessing).
         """
@@ -857,7 +862,7 @@ class EarthSpy:
         )
 
         # store raw folders created by Sentinel Hub API
-        self.raw_filenames = [
+        self.raw_folder_names = [
             r.get_filename_list()[0].split(os.sep)[0] for r in self.requests_list
         ]
 
@@ -879,6 +884,30 @@ class EarthSpy:
 
         return self.outputs
 
+    def extract_sentinelhub_responses(self, folders: list) -> None:
+        """Extract all members of a Tape ARchive produced by the Sentinel Hub
+        API.
+
+        :param folders: List of folders containing outputs.
+        :type folders: list
+        """
+
+        for folder in folders:
+
+            # open Tape ARchive file produced by Sentinel Hub API
+            tar = tarfile.open(f"{folder}/response.tar", "r:")
+
+            # extract all members from the archive
+            tar.extractall(path=folder)
+
+            # close the TAR file
+            tar.close()
+
+            # remove archive after extraction
+            os.remove(f"{folder}/response.tar")
+
+        return None
+
     def rename_output_files(self) -> None:
         """Reorganise the default folder structure and file naming of Sentinel Hub
         services.  Files are renamed using the acquisition date and the data
@@ -887,7 +916,11 @@ class EarthSpy:
         """
 
         # get raw folders created by Sentinel Hub API
-        folders = [f"{self.store_folder}/{fn}" for fn in self.raw_filenames]
+        folders = [f"{self.store_folder}/{fn}" for fn in self.raw_folder_names]
+
+        # extract outputs stored in archives
+        if self.algorithm == "SICE":
+            self.extract_sentinelhub_responses(folders)
 
         # store new file names
         self.output_filenames = []
@@ -898,10 +931,21 @@ class EarthSpy:
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
 
+            # create a tree object to facilitate queries
+            request_tree = objectpath.Tree(request)
+
             # extract date of acquisition
-            date = request["payload"]["input"]["data"][0]["dataFilter"]["timeRange"][
-                "from"
-            ][:10]
+            date = list(request_tree.execute("$..timeRange"))[0]["from"].split("T")[0]
+
+            # store outputs in date folders in multiple outputs
+            if self.algorithm == "SICE":
+
+                # build folder name
+                date_folder = f"{self.store_folder}/{date}"
+
+                # create folder if doesn't exist
+                if not os.path.exists(date_folder):
+                    os.makedirs(date_folder)
 
             # if D download mode, set file name using date and data collection
             if self.download_mode == "D":
@@ -916,7 +960,7 @@ class EarthSpy:
 
                 # recreate split box
                 split_box = shb.BBox(
-                    request["payload"]["input"]["bounds"]["bbox"],
+                    list(request_tree.execute("$..bbox")),
                     crs=self.bounding_box_UTM.crs,
                 )
 
