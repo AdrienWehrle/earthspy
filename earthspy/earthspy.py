@@ -21,6 +21,7 @@ import re
 import requests
 import sentinelhub as shb
 import shutil
+import sys
 import tarfile
 import time
 from typing import Union, Tuple
@@ -890,9 +891,6 @@ class EarthSpy:
             # close the TAR file
             tar.close()
 
-            # remove archive after extraction
-            os.remove(f"{folder}/response.tar")
-
         return None
 
     def rename_output_files(self) -> None:
@@ -947,10 +945,16 @@ class EarthSpy:
 
                 # If SICE, don't rename file but move to date folder
                 if self.algorithm == "SICE":
-                    new_filenames = [
-                        f"{self.store_folder}/{date}/{f.split(os.sep)[-1]}"
-                        for f in date_files
-                    ]
+
+                    for f in date_files:
+
+                        # include date in path
+                        os.rename(
+                            f, f"{self.store_folder}/{date}/{f.split(os.sep)[-1]}"
+                        )
+
+                        # store output file name
+                        self.output_filenames.append(f)
 
             # if SM download mode, set file name using date, data collection and box id
             elif self.download_mode == "SM":
@@ -975,30 +979,30 @@ class EarthSpy:
                 # if SICE, add split box id in all names and move to date folder
                 if self.algorithm == "SICE":
 
-                    new_filenames = []
+                    for f in date_files:
 
-                    for file in date_files:
-
-                        absolute_file_name = file.split(os.sep)[-1]
-                        new_absolute_file_name = file.replace(
+                        # extract absolute path
+                        absolute_file_name = f.split(os.sep)[-1]
+                        new_absolute_file_name = absolute_file_name.replace(
                             ".tif", f"_{split_box_id}.tif"
                         )
-                        new_filenames.append(
+
+                        # include date in path
+                        new_full_file_name = (
                             f"{self.store_folder}/{date}/{new_absolute_file_name}"
                         )
+
+                        # rename file
+                        os.rename(f, new_full_file_name)
+
+                        # store output file name
+                        self.output_filenames.append(new_full_file_name)
 
             # rename file using new file name
             if os.path.exists(f"{folder}/response.tiff"):
 
                 os.rename(f"{folder}/response.tiff", new_filename)
                 self.output_filenames.append(new_filename)
-
-        # if SICE, move renamed files in date folder
-        if self.algorithm == "SICE":
-
-            for date_file, new_file in zip(date_files, new_filenames):
-                os.rename(date_file, new_file)
-                self.output_filenames.append(new_file)
 
         # remove raw storage folders (and not date folders!)
         for name in os.listdir(self.store_folder):
@@ -1049,8 +1053,9 @@ class EarthSpy:
 
                 # set file name of merged raster: replace split box id by mosaic
                 # and add download method name (SM)
-                date_output_filename = re.sub(
-                    "_\d+_.tif", "_SM_mosaic.tif", date_response_files[0]
+                date_output_filename = date_response_files[0].replace(
+                    "_0.tif",
+                    "_SM_mosaic.tif",
                 )
 
                 # open files to merge
