@@ -789,6 +789,18 @@ class EarthSpy:
 
         if self.algorithm == "SICE":
 
+            self.response_files = [
+                "r_TOA_01",
+                "r_TOA_06",
+                "r_TOA_17",
+                "r_TOA_21",
+                "snow_grain_diameter",
+                "snow_specific_surface_area",
+                "diagnostic_retrieval",
+                "albedo_bb_planar_sw",
+                "albedo_bb_spherical_sw",
+            ]
+
             shb_request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
                 evalscript=self.evaluation_script,
@@ -808,33 +820,8 @@ class EarthSpy:
                     ),
                 ],
                 responses=[
-                    shb.SentinelHubRequest.output_response(
-                        "r_TOA_01", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "r_TOA_06", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "r_TOA_17", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "r_TOA_21", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "snow_grain_diameter", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "snow_specific_surface_area", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "diagnostic_retrieval", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "albedo_bb_planar_sw", shb.MimeType.TIFF
-                    ),
-                    shb.SentinelHubRequest.output_response(
-                        "albedo_bb_spherical_sw", shb.MimeType.TIFF
-                    ),
+                    shb.SentinelHubRequest.output_response(rf, shb.MimeType.TIFF)
+                    for rf in self.response_files
                 ],
                 bbox=loc_bbox,
                 size=loc_size,
@@ -982,7 +969,7 @@ class EarthSpy:
                 # build new file name
                 new_filename = (
                     f"{self.store_folder}/"
-                    + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
+                    + f"{date}_{self.data_collection_str}_{split_box_id}.tif"
                 )
 
                 # if SICE, add split box id in all names and move to date folder
@@ -1041,49 +1028,60 @@ class EarthSpy:
         # store new file names
         self.output_filenames_renamed = []
 
-        # merge rasters for each distinct date
+        # merge rasters for each distinct date (work with distinct dates because
+        # of different trees depending on the algorithm used)
         for date in distinct_dates:
 
-            # select only files matching acquisition date
+            # select files matching acquisition date only
             date_output_files = [f for f in self.output_filenames if date in f]
 
-            # set file name of merged raster
-            date_output_filename = (
-                date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
-            )
+            # loop over response files if multiple ones (they all need to be
+            # merged, but only to their respective boxes)
+            if self.algorithm == "SICE":
+                file_iterator = self.response_files
+            else:
+                # set to tif to select all files (but keep a general file_iterator)
+                file_iterator = ["tif"]
 
-            # add download mode in file name
-            date_output_filename = re.sub("_\d+_", "_SM_", date_output_filename)
+            for pattern in file_iterator:
 
-            # open files to merge
-            rasters_to_merge = [rasterio.open(file) for file in date_output_files]
+                date_response_files = [f for f in date_output_files if pattern in f]
 
-            # extract metadata
-            output_meta = rasters_to_merge[0].meta.copy()
+                # set file name of merged raster: replace split box id by mosaic
+                # and add download method name (SM)
+                date_output_filename = re.sub(
+                    "_\d+_.tif", "_SM_mosaic.tif", date_response_files[0]
+                )
 
-            # merge rasters
-            mosaic, output_transform = merge(rasters_to_merge)
+                # open files to merge
+                rasters_to_merge = [rasterio.open(file) for file in date_response_files]
 
-            # prepare mosaic metadata
-            output_meta.update(
-                {
-                    "driver": "GTiff",
-                    "height": mosaic.shape[1],
-                    "width": mosaic.shape[2],
-                    "transform": output_transform,
-                }
-            )
+                # extract metadata
+                output_meta = rasters_to_merge[0].meta.copy()
 
-            # write mosaic
-            with rasterio.open(date_output_filename, "w", **output_meta) as dst:
-                dst.write(mosaic)
+                # merge rasters
+                mosaic, output_transform = merge(rasters_to_merge)
 
-            # save file name of merged raster
-            self.output_filenames_renamed.append(date_output_filename)
+                # prepare mosaic metadata
+                output_meta.update(
+                    {
+                        "driver": "GTiff",
+                        "height": mosaic.shape[1],
+                        "width": mosaic.shape[2],
+                        "transform": output_transform,
+                    }
+                )
 
-            # remove split boxes to keep only the mosaic
-            if self.remove_splitboxes:
-                for file in date_output_files:
-                    os.remove(file)
+                # write mosaic
+                with rasterio.open(date_output_filename, "w", **output_meta) as dst:
+                    dst.write(mosaic)
+
+                # save file name of merged raster
+                self.output_filenames_renamed.append(date_output_filename)
+
+                # remove split boxes to keep only the mosaic
+                if self.remove_splitboxes:
+                    for file in date_response_files:
+                        os.remove(file)
 
         return None
