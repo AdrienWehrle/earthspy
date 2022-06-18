@@ -937,7 +937,7 @@ class EarthSpy:
             # extract date of acquisition
             date = list(request_tree.execute("$..timeRange"))[0]["from"].split("T")[0]
 
-            # store outputs in date folders in multiple outputs
+            # if SICE, store files in date subfolders if multiple outputs
             if self.algorithm == "SICE":
 
                 # build folder name
@@ -947,6 +947,9 @@ class EarthSpy:
                 if not os.path.exists(date_folder):
                     os.makedirs(date_folder)
 
+                # list all output files available for date
+                date_files = sorted(glob.glob(f"{folder}/*.tif"))
+
             # if D download mode, set file name using date and data collection
             if self.download_mode == "D":
 
@@ -954,6 +957,13 @@ class EarthSpy:
                 new_filename = (
                     f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
+
+                # If SICE, don't rename file but move to date folder
+                if self.algorithm == "SICE":
+                    new_filenames = [
+                        f"{self.store_folder}/{date}/{f.split(os.sep)[-1]}"
+                        for f in date_files
+                    ]
 
             # if SM download mode, set file name using date, data collection and box id
             elif self.download_mode == "SM":
@@ -975,14 +985,40 @@ class EarthSpy:
                     + f"{date}_{split_box_id}_{self.data_collection_str}.tif"
                 )
 
+                # if SICE, add split box id in all names and move to date folder
+                if self.algorithm == "SICE":
+
+                    new_filenames = []
+
+                    for file in date_files:
+
+                        absolute_file_name = file.split(os.sep)[-1]
+                        new_absolute_file_name = file.replace(
+                            ".tif", f"_{split_box_id}.tif"
+                        )
+                        new_filenames.append(
+                            f"{self.store_folder}/{date}/{new_absolute_file_name}"
+                        )
+
+            # rename file using new file name
             if os.path.exists(f"{folder}/response.tiff"):
-                # rename file using new file name
+
                 os.rename(f"{folder}/response.tiff", new_filename)
                 self.output_filenames.append(new_filename)
 
-        # remove raw storage folders
+        # if SICE, move renamed files in date folder
+        if self.algorithm == "SICE":
+
+            for date_file, new_file in zip(date_files, new_filenames):
+                os.rename(date_file, new_file)
+                self.output_filenames.append(new_file)
+
+        # remove raw storage folders (and not date folders!)
         for name in os.listdir(self.store_folder):
-            if os.path.isdir(os.path.join(self.store_folder, name)):
+
+            if (
+                os.path.isdir(os.path.join(self.store_folder, name))
+            ) and "-" not in name:
                 shutil.rmtree(f"{self.store_folder}/{name}")
 
         return None
@@ -993,8 +1029,11 @@ class EarthSpy:
         the different rasters have been merged.
         """
 
-        # extract dates from file names
-        dates = [f.split(os.sep)[-1].split("_")[0] for f in self.output_filenames]
+        # extract dates from file or folder names (depending on algorithm)
+        if self.algorithm == "SICE":
+            dates = [f.split(os.sep)[-2] for f in self.output_filenames]
+        else:
+            dates = [f.split(os.sep)[-1].split("_")[0] for f in self.output_filenames]
 
         # get distinct dates because several split boxes a day
         distinct_dates = list(Counter(dates).keys())
@@ -1008,7 +1047,7 @@ class EarthSpy:
             # select only files matching acquisition date
             date_output_files = [f for f in self.output_filenames if date in f]
 
-            # set file name ofx merged raster
+            # set file name of merged raster
             date_output_filename = (
                 date_output_files[0].rsplit(".", 4)[0] + "_mosaic.tif"
             )
