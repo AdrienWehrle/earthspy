@@ -431,30 +431,23 @@ class EarthSpy:
         """
 
         # set Downloads folder as default main store folder
-        if store_folder is None:
-            store_folder = f"{Path.home()}/Downloads"
+        if not store_folder:
 
-        # create folder if doesnt exist
+            store_folder = f"{Path.home()}/Downloads/earthspy"
+
+            # set earthspy folder as default sub store folder
+            if self.bounding_box_name:
+                store_folder += f"{os.sep}{self.bounding_box_name}"
+
+            if self.algorithm:
+                store_folder += f"{os.sep}{self.algorithm}"
+
+        # create subfolder if doesnt exist
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
-        # set earthspy folder as default sub store folder
-        if self.bounding_box_name is None:
-            folder_name = "earthspy"
-
-        # or use bounding box name (if available) to prevent overwrite
-        else:
-            folder_name = self.bounding_box_name
-
-        # create full path
-        full_path = f"{store_folder}/{folder_name}"
-
-        # create subfolder if doesnt exist
-        if not os.path.exists(full_path):
-            os.makedirs(full_path)
-
         # set attribute
-        self.store_folder = full_path
+        self.store_folder = store_folder
 
         return self.store_folder
 
