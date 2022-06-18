@@ -16,11 +16,9 @@ import pandas as pd
 from pathlib import Path
 import rasterio
 from rasterio.merge import merge
-import re
 import requests
 import sentinelhub as shb
 import shutil
-import sys
 import tarfile
 import time
 from typing import Union, Tuple
