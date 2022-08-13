@@ -9,6 +9,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 import glob
 import json
+from multiprocessing import cpu_count
 import numpy as np
 import objectpath
 import os
@@ -75,6 +76,8 @@ class EarthSpy:
         algorithm: Union[None, str] = None,
         resolution: Union[None, int] = None,
         store_folder: Union[None, str] = None,
+        multithreading: bool = True,
+        nb_cores: Union[None, int] = None,
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
@@ -115,6 +118,15 @@ class EarthSpy:
           ~/Downloads/earthspy.
         :type store_folder: Union[None, str], optional
 
+        :param multithreading: Whether or not to download in multithreading,
+          defaults to True.
+        :type multithreading: bool, optional
+
+        :param nb_cores: Number of cores to use in multithreading, defaults to
+          None. If not specified, set to the number of cores available minus 2
+          (to avoid CPU overload).
+        :type nb_cores: Union[None, int], optional
+
         :param download_mode: Whether to perform a Direct (D) or Split and Merge
           (SM) download, defaults to "SM". D uses the maximum resolution
           achievable keeping the 2500*2500 pixels maximum size set by Sentinel
@@ -133,6 +145,7 @@ class EarthSpy:
 
         # set processing attributes
         self.download_mode = download_mode
+        self.multithreading = multithreading
         self.verbose = verbose
         self.remove_splitboxes = remove_splitboxes
         self.algorithm = algorithm
@@ -142,6 +155,9 @@ class EarthSpy:
         self.get_data_collection()
         self.get_satellite_name()
         self.get_data_collection_resolution()
+
+        # set number of cores
+        self.set_number_of_cores(nb_cores)
 
         # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
@@ -266,6 +282,26 @@ class EarthSpy:
 
         return self.data_collection_resolution
 
+     def set_number_of_cores(self, nb_cores) -> int:
+        """Set number of cores if not specificed by user.
+        :return: Number of cores to use in multithreading.
+        :rtype: int
+        """
+
+        # set number of cores provided by user
+        if self.multithreading and isinstance(nb_cores, (int, float)):
+            self.nb_cores = nb_cores
+
+        # keep two CPUs free to prevent overload
+        elif self.multithreading and nb_cores is None:
+            self.nb_cores = cpu_count() - 2
+
+        # if not multithreading, sequential processing
+        elif not self.multithreading:
+            self.nb_cores = 1
+
+        return self.nb_cores
+    
     def get_date_range(
         self, time_interval: Union[int, list]
     ) -> pd.core.indexes.datetimes.DatetimeIndex:
@@ -623,7 +659,7 @@ class EarthSpy:
 
     def set_split_boxes_ids(self) -> dict:
         """Set split boxes ids as simple integers to be accessed anytime in random order
-        (mostly for multiprocessing).
+        (mostly for multithreading).
         """
 
         # store split boxes ids in dict
@@ -703,7 +739,7 @@ class EarthSpy:
         self, date: pd._libs.tslibs.timestamps.Timestamp, loc_bbox: shb.geometry.BBox
     ) -> list:
         """Send the Sentinel Hub API request with settings depending on the
-        multiprocessing strategy.
+        multithreading strategy.
 
         If parallelized on split_boxes, then date_range is run in sequence for
         each split box. If parallelized on date_range, then split_boxes are run
@@ -787,7 +823,7 @@ class EarthSpy:
 
     def send_sentinelhub_requests(self) -> list:
         """Send the Sentinel Hub API request depending on user specifications (mainly
-        download mode and multiprocessing).
+        download mode and multithreading).
         """
 
         # list SentinelHub requests to send over

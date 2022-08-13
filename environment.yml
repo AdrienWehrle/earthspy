@@ -1,4 +1,4 @@
-name: earthspy
+name: earthspy-devdev
 channels:
   - conda-forge/label/cf202003
   - https://conda.software.inl.gov/public
