@@ -282,8 +282,9 @@ class EarthSpy:
 
         return self.data_collection_resolution
 
-     def set_number_of_cores(self, nb_cores) -> int:
+    def set_number_of_cores(self, nb_cores) -> int:
         """Set number of cores if not specificed by user.
+
         :return: Number of cores to use in multithreading.
         :rtype: int
         """
@@ -301,7 +302,7 @@ class EarthSpy:
             self.nb_cores = 1
 
         return self.nb_cores
-    
+
     def get_date_range(
         self, time_interval: Union[int, list]
     ) -> pd.core.indexes.datetimes.DatetimeIndex:
