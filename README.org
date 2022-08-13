@@ -96,7 +96,7 @@ example_evalscript = """
       // Set gain for visualisation
       let gain = 2.5;
       // Return RGB
-      return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain];
+      return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain, sample.dataMask];
     }
 
     """
