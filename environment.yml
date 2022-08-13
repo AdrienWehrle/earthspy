@@ -1,13 +1,13 @@
-name: earthspy-test
+name: earthspy
 channels:
   - conda-forge/label/cf202003
   - https://conda.software.inl.gov/public
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3
   - numpy
   - pandas
   - rasterio
-  - sentinelhub
+  - sentinelhub >= 3.4
   - pip
