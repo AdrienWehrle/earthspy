@@ -128,13 +128,6 @@ class TestEarthspy:
         # check if data resolution was set correctly
         assert isinstance(self.t1.data_collection_resolution, int)
 
-    def test_set_number_of_cores(self) -> None:
-        """Test selection of number of cores for multiprocessing"""
-
-        self.t1.set_number_of_cores(None)
-        # check if number of cores was set correctly
-        assert isinstance(self.t1.nb_cores, int)
-
     def test_get_date_range(self) -> None:
         """Test datetime object creation"""
 
