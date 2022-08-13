@@ -60,6 +60,10 @@ class EarthSpy:
 
         # setup Sentinel Hub connection
         self.config = shb.SHConfig()
+    
+        # modify default download parameters for batch downloads
+        self.config.download_timeout_seconds = 300
+        self.config.download_sleep_time = 20
 
         # set credentials
         self.config.sh_client_id = self.CLIENT_ID
@@ -837,7 +841,7 @@ class EarthSpy:
 
         # the actual Sentinel Hub download
         self.outputs = shb.SentinelHubDownloadClient(config=self.config).download(
-            self.download_list, max_threads=20
+            self.download_list, max_threads=20, show_progress=True
         )
 
         # store raw folders created by Sentinel Hub API
