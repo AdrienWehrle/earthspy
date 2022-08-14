@@ -250,7 +250,7 @@ class TestEarthspy:
 
         r2 = self.t3.set_correct_resolution()
         # check that query resolution was set correctly
-        assert r1 == 11
+        assert r1 == 10
         # check that download mode was set correctly
         assert isinstance(self.t1.download_mode, str)
 
