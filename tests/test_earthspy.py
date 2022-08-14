@@ -100,50 +100,48 @@ class TestEarthspy:
         assert self.t1.config.sh_client_id == os.environ["SH_CLIENT_ID"]
         assert self.t1.config.sh_client_secret == os.environ["SH_CLIENT_SECRET"]
 
-        return None
-
     def test_set_query_parameters(self) -> None:
         """Test direct attribute assignement."""
 
-        self.t1.set_query_parameters(
-            bounding_box=[-51.13, 69.204, -51.06, 69.225],
-            time_interval=["2019-08-23"],
-            evaluation_script=self.test_evalscript,
-            data_collection=self.test_collection,
-            download_mode="SM",
-        )
-
         # check if attributes were set accordingly
         assert self.t1.download_mode is not None
+        assert self.t1.download_mode == "SM"
         assert self.t1.verbose
         assert self.t1.data_collection_str == self.test_collection
+        assert isinstance(
+            self.t1.user_date_range, pd.core.indexes.datetimes.DatetimeIndex
+        )
+        assert isinstance(self.t1.evaluation_script, str)
 
     def test_get_data_collection(self) -> None:
         """Test data collection selection."""
 
-        self.t1.get_data_collection()
+        # check if data collection was set properly
         assert self.t1.data_collection == shb.DataCollection[self.test_collection]
+        assert isinstance(self.t1.data_collection, shb.DataCollection)
 
     def test_get_satellite_name(self) -> None:
         """Test satellite name extraction"""
 
-        self.t1.get_satellite_name()
         # check if satellite name was set properly
         assert isinstance(self.t1.satellite, str)
+        assert self.t1.satellite == "SENTINEL2"
 
     def test_get_data_collection_resolution(self) -> None:
         """Test resolution selection"""
 
-        self.t1.get_data_collection_resolution()
         # check if data resolution was set correctly
-        assert isinstance(self.t1.data_collection_resolution, int)
+        assert isinstance(self.t1.data_collection_resolution, 10)
+        assert isinstance(self.t2.data_collection_resolution, 10)
+        assert isinstance(self.t3.data_collection_resolution, 10)
 
     def test_set_number_of_cores(self) -> None:
         """Test selection of number of cores for multiprocessing"""
 
-        self.t1.set_number_of_cores(None)
         # check if number of cores was set correctly
         assert isinstance(self.t1.nb_cores, int)
+        assert isinstance(self.t2.nb_cores, int)
+        assert isinstance(self.t3.nb_cores, int)
 
     def test_get_date_range(self) -> None:
         """Test datetime object creation"""
@@ -152,23 +150,35 @@ class TestEarthspy:
         # check if date from present was set accordingly
         assert isinstance(d1, pd.DatetimeIndex)
 
-        d2 = self.t1.get_date_range(time_interval="2019-08-01")
+        d2a = self.t1.get_date_range(time_interval="2019-08-01")
+        d2b = self.t2.get_date_range(time_interval="2019-08-01")
+        d2c = self.t3.get_date_range(time_interval="2019-08-01")
         # check if single date (str) was set accordingly
-        assert isinstance(d2, pd.DatetimeIndex)
+        assert d2a == pd.date_range("2019-08-01", "2019-08-01")
+        assert d2b == pd.date_range("2019-08-01", "2019-08-01")
+        assert d2c == pd.date_range("2019-08-01", "2019-08-01")
 
-        d3 = self.t1.get_date_range(time_interval=["2019-08-01"])
+        d3a = self.t1.get_date_range(time_interval=["2019-08-01"])
+        d3b = self.t2.get_date_range(time_interval=["2019-08-01"])
+        d3c = self.t3.get_date_range(time_interval=["2019-08-01"])
         # check if single date (list) was set accordingly
-        assert isinstance(d3, pd.DatetimeIndex)
-        # check if only the very date was included
-        assert len(d3) == 1
+        assert d3a == pd.date_range("2019-08-01", "2019-08-01")
+        assert d3b == pd.date_range("2019-08-01", "2019-08-01")
+        assert d3c == pd.date_range("2019-08-01", "2019-08-01")
 
-        d4 = self.t1.get_date_range(
+        d4a = self.t1.get_date_range(
+            time_interval=["2019-08-01", "2019-08-02", "2019-08-03"]
+        )
+        d4b = self.t2.get_date_range(
+            time_interval=["2019-08-01", "2019-08-02", "2019-08-03"]
+        )
+        d4c = self.t3.get_date_range(
             time_interval=["2019-08-01", "2019-08-02", "2019-08-03"]
         )
         # check if a list of dates was set accordingly
-        assert isinstance(d4, pd.DatetimeIndex)
-        # check if all dates were included
-        assert len(d4) == 3
+        assert d4a == pd.date_range("2019-08-01", "2019-08-03")
+        assert d4b == pd.date_range("2019-08-01", "2019-08-03")
+        assert d4c == pd.date_range("2019-08-01", "2019-08-03")
 
     def test_get_bounding_box(self) -> None:
         """Test bounding box creation"""
@@ -188,21 +198,21 @@ class TestEarthspy:
             np.nanmax(area_coordinates[:, 1]),
         ]
         # check if setting Ilulissat bounding_box with coordinates gives
-        # the same bounding_box as calling its area name
+        # the same bounding_box just like calling its area name
         assert area_bounding_box == self.test_bounding_box
 
     def test_get_store_folder(self) -> None:
         """Test store folder selection"""
 
-        # sf1 = self.t1.get_store_folder(None)
+        sf1 = self.t1.get_store_folder(None)
         # # check if default store folder was set accordingly
-        # assert isinstance(sf1, str)
+        assert isinstance(sf1, str)
 
-        # sf2 = self.t1.get_store_folder(store_folder="./test/path")
+        sf2 = self.t1.get_store_folder(store_folder="/test/path")
         # # check if passed store folder was set accordingly
-        # assert isinstance(sf2, str)
+        assert isinstance(sf2, str)
         # # check the actual string
-        # assert sf2 == "/test/path/earthspy"
+        assert sf2 == "/test/path"
 
     def test_convert_bounding_box_coordinates(self) -> None:
         """Test bounding box conversion"""
@@ -210,6 +220,10 @@ class TestEarthspy:
         self.t1.convert_bounding_box_coordinates()
         # check if a new Sentinel Hub bounding box was created
         assert isinstance(self.t1.bounding_box_UTM, shb.geometry.BBox)
+        # check if the right CRS was assigned
+        assert self.t1.bounding_box_UTM.crs == shb.CRS("32622")
+        # check if the right CRS was assigned
+        assert self.t1.bounding_box.crs == shb.CRS("4326")
         # check if a bounding box list was created
         assert isinstance(self.t1.bounding_box_UTM_list, list)
         # check that all items of the list are floats
@@ -223,17 +237,25 @@ class TestEarthspy:
         mr1 = self.t1.get_max_resolution()
         # check that maximum resolution was set correctly
         assert isinstance(mr1, np.int64)
+        assert isinstance(mr1, 11)
 
     def test_set_correct_resolution(self) -> None:
         """Test resolution refinement"""
 
         r1 = self.t1.set_correct_resolution()
         # check that query resolution was set correctly
-        assert isinstance(r1, int)
+        assert isinstance(r1, 10)
+        # check that download mode was set correctly
+        assert isinstance(self.t1.download_mode, str)
+
+        r2 = self.t3.set_correct_resolution()
+        # check that query resolution was set correctly
+        assert isinstance(r1, 11)
         # check that download mode was set correctly
         assert isinstance(self.t1.download_mode, str)
 
     def test_list_requests(self) -> None:
+        """Test request listing"""
 
         lr1 = self.t1.list_requests()
         # check that a list was created accordingly
@@ -259,6 +281,13 @@ class TestEarthspy:
         assert isinstance(sb1, list)
         # check that each split box is a Sentinel Hub bounding box
         assert all(isinstance(item, shb.geometry.BBox) for item in sb1)
+        # check that each split box is in the correct projection
+        assert all(item.crs == shb.CRS("32622") for item in sb1)
+
+        # check that only one box has been created
+        assert len(self.t3.split_boxes) == 1
+        # check that the split box is in the right projection
+        assert self.t3.split_boxes[0].crs == shb.CRS("4326")
 
     def test_get_evaluation_script_from_link(self) -> None:
         """Test custom script extraction from URL"""
