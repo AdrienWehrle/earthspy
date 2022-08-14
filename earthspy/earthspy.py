@@ -60,7 +60,7 @@ class EarthSpy:
 
         # setup Sentinel Hub connection
         self.config = shb.SHConfig()
-    
+
         # modify default download parameters for batch downloads
         self.config.download_timeout_seconds = 300
         self.config.download_sleep_time = 20
@@ -718,7 +718,7 @@ class EarthSpy:
         # loop over dates if direct download
         if self.download_mode == "D":
             requests_list = [
-                self.sentinelhub_request(date, self.split_boxes)
+                self.sentinelhub_request(date, self.split_boxes[0])
                 for date in self.query_date_range
             ]
 
@@ -733,7 +733,11 @@ class EarthSpy:
             ]
 
         # create list of requests
-        self.requests_list = [item for sublist in requests_list for item in sublist]
+        if self.download_mode == "D":
+            self.requests_list = requests_list
+
+        elif self.download_mode == "SM":
+            self.requests_list = [item for sublist in requests_list for item in sublist]
 
         # create list of download requests
         self.download_list = [item.download_list[0] for item in self.requests_list]

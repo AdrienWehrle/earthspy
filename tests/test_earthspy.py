@@ -37,7 +37,7 @@ class TestEarthspy:
           // Set gain for visualisation
           let gain = 2.5;
           // Return RGB
-          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain];
+          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain, sample.dataMask];
         }
         """
 
@@ -76,6 +76,16 @@ class TestEarthspy:
         evaluation_script=test_evalscript,
         data_collection=test_collection,
         download_mode="SM",
+    )
+
+    # example of query with direct mode
+    t3 = es.EarthSpy("auth.txt")
+    t3.set_query_parameters(
+        bounding_box=test_bounding_box,
+        time_interval=["2019-08-23"],
+        evaluation_script=test_evalscript,
+        data_collection=test_collection,
+        download_mode="D",
     )
 
     def test_init(self) -> None:
@@ -223,6 +233,24 @@ class TestEarthspy:
         # check that download mode was set correctly
         assert isinstance(self.t1.download_mode, str)
 
+    def test_list_requests(self) -> None:
+
+        lr1 = self.t1.list_requests()
+        # check that a list was created accordingly
+        assert isinstance(lr1, list)
+        assert len(lr1) == 4
+        assert len(lr1) == len(self.t1.split_boxes)
+        # check that a list of Sentinel Hub requests was created
+        assert all(isinstance(item, shb.SentinelHubRequest) for item in lr1)
+
+        lr2 = self.t3.list_requests()
+        # check that a list was created accordingly
+        assert isinstance(lr2, list)
+        assert len(lr2) == 1
+        assert len(lr2) == len(self.t3.split_boxes)
+        # check that a list of Sentinel Hub requests was created
+        assert isinstance(lr2[0], shb.SentinelHubRequest)
+
     def test_get_split_boxes(self) -> None:
         """Test split box creation"""
 
@@ -260,10 +288,17 @@ class TestEarthspy:
     def test_sentinelhub_request(self) -> None:
         """Test API request generation"""
 
-        # sr1 = self.t3.sentinelhub_request(self.t3.split_boxes[0])
-        # # check that a list of Sentinel Hub requests was created
-        # assert all(isinstance(item, shb.DownloadRequest) for item in sr1)
-        # assert len(sr1) == 1
+        sr1 = self.t1.sentinelhub_request(
+            self.t1.user_date_range[0], self.t1.split_boxes[0]
+        )
+        # # check that a Sentinel Hub request was created
+        assert isinstance(sr1, shb.SentinelHubRequest)
+
+        sr2 = self.t3.sentinelhub_request(
+            self.t3.user_date_range[0], self.t3.split_boxes[0]
+        )
+        # # check that a Sentinel Hub request was created
+        assert isinstance(sr2, shb.SentinelHubRequest)
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
