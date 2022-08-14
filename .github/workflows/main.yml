@@ -42,24 +42,15 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
-      - name: Run tests
+      - name: Run tests and generate coverage report
         shell: bash -l {0}
         run: |
           pip install pytest
-          pytest .
+          pytest --cov=./ --cov-report=xml
         env:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
-      - name: Safety check
-        uses: AlicanAkkus/pinder-action@0.1
-
-      - name: Generate coverage report
-        run: |
-          conda install -c anaconda pytest
-          conda install -c conda-forge pytest-cov
-          pytest --cov=./ --cov-report=xml
-        
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
@@ -70,3 +61,6 @@ jobs:
           name: codecov-umbrella
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
+
+      - name: Safety check
+        uses: AlicanAkkus/pinder-action@0.1
