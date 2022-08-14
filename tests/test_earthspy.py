@@ -13,9 +13,6 @@ import pandas as pd
 import requests
 import sentinelhub as shb
 
-SH_CLIENT_ID = "5b3c7e38-5a77-4ffc-9e58-81da94fd6e6c"
-SH_CLIENT_SECRET = "w+OYjKMl-V+/:<k[,UprJb}Wl.j]qMVli3E-;xQT"
-
 
 class TestEarthspy:
 
@@ -62,7 +59,7 @@ class TestEarthspy:
     print(os.getcwd())
 
     # example of query with default parameters
-    t1 = es.EarthSpy("/home/adrien/UZH/auth.txt")
+    t1 = es.EarthSpy("auth.txt")
     t1.set_query_parameters(
         bounding_box=test_bounding_box,
         time_interval=["2019-08-23"],
@@ -82,7 +79,7 @@ class TestEarthspy:
     )
 
     # example of query with direct mode
-    t3 = es.EarthSpy("/home/adrien/UZH/auth.txt")
+    t3 = es.EarthSpy("auth.txt")
     t3.set_query_parameters(
         bounding_box=test_bounding_box,
         time_interval=["2019-08-23"],
