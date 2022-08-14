@@ -302,7 +302,7 @@ class TestEarthspy:
         sbi1 = self.t1.set_split_boxes_ids()
         # check that split box ids were saved in dictionnary
         assert isinstance(sbi1, dict)
-        # check that dictionnary is the right shape
+        # check that dictionnary has the right shape
         assert len(sbi1) == 4
 
     def test_get_evaluation_script(self) -> None:
