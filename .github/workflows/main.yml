@@ -46,6 +46,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install pytest
+          pip install pytest-cov
           pytest --cov=./ --cov-report=xml
         env:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
