@@ -137,3 +137,9 @@ auth.txt
 # emacs backup files
 *~
 \#*\#
+
+# codecov
+*.gcno
+*.gcda
+*.gcov
+test_calculator
