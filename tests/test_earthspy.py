@@ -131,9 +131,9 @@ class TestEarthspy:
         """Test resolution selection"""
 
         # check if data resolution was set correctly
-        assert isinstance(self.t1.data_collection_resolution, 10)
-        assert isinstance(self.t2.data_collection_resolution, 10)
-        assert isinstance(self.t3.data_collection_resolution, 10)
+        assert self.t1.data_collection_resolution == 10
+        assert self.t2.data_collection_resolution == 10
+        assert self.t3.data_collection_resolution == 10
 
     def test_set_number_of_cores(self) -> None:
         """Test selection of number of cores for multiprocessing"""
@@ -176,9 +176,9 @@ class TestEarthspy:
             time_interval=["2019-08-01", "2019-08-02", "2019-08-03"]
         )
         # check if a list of dates was set accordingly
-        assert d4a == pd.date_range("2019-08-01", "2019-08-03")
-        assert d4b == pd.date_range("2019-08-01", "2019-08-03")
-        assert d4c == pd.date_range("2019-08-01", "2019-08-03")
+        pd.testing.assert_index_equal(d4a, pd.date_range("2019-08-01", "2019-08-03"))
+        pd.testing.assert_index_equal(d4b, pd.date_range("2019-08-01", "2019-08-03"))
+        pd.testing.assert_index_equal(d4c, pd.date_range("2019-08-01", "2019-08-03"))
 
     def test_get_bounding_box(self) -> None:
         """Test bounding box creation"""
@@ -208,11 +208,11 @@ class TestEarthspy:
         # # check if default store folder was set accordingly
         assert isinstance(sf1, str)
 
-        sf2 = self.t1.get_store_folder(store_folder="/test/path")
+        sf2 = self.t1.get_store_folder(store_folder="./test/path")
         # # check if passed store folder was set accordingly
         assert isinstance(sf2, str)
         # # check the actual string
-        assert sf2 == "/test/path"
+        assert sf2 == "./test/path"
 
     def test_convert_bounding_box_coordinates(self) -> None:
         """Test bounding box conversion"""
