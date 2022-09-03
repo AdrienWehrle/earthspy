@@ -296,6 +296,13 @@ class TestEarthspy:
         # check that evalscript was set accordingly
         assert es1 == requests.get(self.test_url).text
 
+    def test_get_evaluation_script_from_file(self) -> None:
+        """Test custom script extraction from URL"""
+
+        es1 = self.t1.get_evaluation_script_from_link(self.test_url)
+        # check that evalscript was set accordingly
+        assert es1 == requests.get(self.test_url).text
+
     def test_set_split_boxes_ids(self) -> None:
         """Test split box ID generation"""
 

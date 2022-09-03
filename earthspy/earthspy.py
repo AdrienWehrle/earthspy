@@ -17,6 +17,7 @@ import pandas as pd
 from pathlib import Path
 import rasterio
 from rasterio.merge import merge
+import re
 import requests
 import sentinelhub as shb
 import shutil
@@ -662,6 +663,24 @@ class EarthSpy:
 
         return self.evaluation_script
 
+    def get_evaluation_script_from_file(
+        self, evaluation_script: Union[None, str]
+    ) -> str:
+        """Get evaluation script from JavaScript file stored locally.
+
+        :param evaluation_script: full local path to JavaScript file.
+        :type evaluation_script: Union[None, str]
+
+        :return: Custom script.
+        :rtype: str
+        """
+
+        # read file and store content
+        with open(evaluation_script, "r") as f:
+            self.evaluation_script = f.read()
+
+        return self.evaluation_script
+
     def set_split_boxes_ids(self) -> dict:
         """Set split boxes ids as simple integers to be accessed anytime in random order
         (mostly for multithreading).
@@ -702,6 +721,13 @@ class EarthSpy:
         elif validators.url(evaluation_script):
 
             self.evaluation_script = self.get_evaluation_script_from_link(
+                evaluation_script
+            )
+
+        # if path to a JavaScript file, read file
+        elif ".js" in evaluation_script:
+
+            self.evaluation_script = self.get_evaluation_script_from_file(
                 evaluation_script
             )
 
@@ -789,18 +815,30 @@ class EarthSpy:
 
         if self.algorithm == "SICE":
 
-            self.response_files = [
-                "r_TOA_01",
-                "r_TOA_06",
-                "r_TOA_17",
-                "r_TOA_21",
-                "snow_grain_diameter",
-                "snow_specific_surface_area",
-                "diagnostic_retrieval",
-                "albedo_bb_planar_sw",
-                "albedo_bb_spherical_sw",
+            # extract output variables from JavaScript code
+            # set string to look for
+            pattern = "output"
+
+            # list all pattern matches
+            pattern_matches = [m for m in re.finditer(pattern, self.evaluation_script)]
+
+            # find end of variable definition
+            end_definition = self.evaluation_script.find(
+                "]", pattern_matches[0].start()
+            )
+
+            # extract text corresponding to first match (output list)
+            content = self.evaluation_script[
+                pattern_matches[0].start() : end_definition
             ]
 
+            # list all fields in variable
+            fields = re.findall(r'"([^"]*)"', content)
+
+            # keep only variable names (and skip SampleType)
+            self.response_files = fields[::2]
+
+            # build SICE-specific Sentinel Hub request
             shb_request = shb.SentinelHubRequest(
                 data_folder=self.store_folder,
                 evalscript=self.evaluation_script,
