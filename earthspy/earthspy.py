@@ -662,6 +662,24 @@ class EarthSpy:
 
         return self.evaluation_script
 
+    def get_evaluation_script_from_file(
+        self, evaluation_script: Union[None, str]
+    ) -> str:
+        """Get evaluation script from JavaScript file stored locally.
+
+        :param evaluation_script: full local path to JavaScript file.
+        :type evaluation_script: Union[None, str]
+
+        :return: Custom script.
+        :rtype: str
+        """
+
+        # read file and store content
+        with open(evaluation_script, "r") as f:
+            self.evaluation_script = f.read()
+
+        return self.evaluation_script
+
     def set_split_boxes_ids(self) -> dict:
         """Set split boxes ids as simple integers to be accessed anytime in random order
         (mostly for multithreading).
@@ -702,6 +720,13 @@ class EarthSpy:
         elif validators.url(evaluation_script):
 
             self.evaluation_script = self.get_evaluation_script_from_link(
+                evaluation_script
+            )
+
+        # if path to a JavaScript file, read file
+        elif ".js" in evaluation_script:
+
+            self.evaluation_script = self.get_evaluation_script_from_file(
                 evaluation_script
             )
 
