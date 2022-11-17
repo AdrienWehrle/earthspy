@@ -16,7 +16,7 @@ import sentinelhub as shb
 
 class TestEarthspy:
 
-    # create local variables for convenience
+    # create local variables from environment secrets for convenience
     SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
     SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
 
