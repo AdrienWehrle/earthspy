@@ -102,6 +102,9 @@ example_evalscript = """
 
     """
 
+# auth.txt should contain username and password (first and second row)
+job = es.EarthSpy("/path/to/auth.txt")
+
 # pass string to evaluation_script
 job.set_query_parameters(
     bounding_box=[-51.13, 69.204, -51.06, 69.225],
