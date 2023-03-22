@@ -212,7 +212,10 @@ class EarthSpy:
         self.catalog_config = self.config.copy()
 
         # set Sentinel-3 specific base URL of deployment
-        if self.data_collection_str == "SENTINEL3_OLCI":
+        if (
+            self.data_collection_str == "SENTINEL3_OLCI"
+            or self.data_collection_str == "LANDSAT_OT_L2"
+        ):
             self.catalog_config.sh_base_url = shb.DataCollection[
                 self.data_collection_str
             ].service_url
@@ -274,6 +277,8 @@ class EarthSpy:
             self.data_collection_resolution = 10
         elif self.satellite == "SENTINEL3":
             self.data_collection_resolution = 300
+        elif self.satellite == "LANDSAT":
+            self.data_collection_resolution = 15
         else:
             self.data_collection_resolution = 1000
 
@@ -322,7 +327,6 @@ class EarthSpy:
 
         # if an integer, create a datetimeIndex with the number of days from present date
         if isinstance(time_interval, int):
-
             # keep time_interval positive
             if time_interval < 0:
                 time_interval *= -1
@@ -373,7 +377,6 @@ class EarthSpy:
 
         # if a list, set Sentinel Hub BBox wit bounding_box
         if isinstance(bounding_box, list):
-
             # create Sentinel Hub BBox
             self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
 
@@ -382,12 +385,10 @@ class EarthSpy:
 
         # if a string, extract bounding box from corresponding GEOJSON file
         elif isinstance(bounding_box, str):
-
             # list all available GEOJSON files
             json_files = glob.glob("data/*.geojson")
 
             for json_file in json_files:
-
                 # open GEOJSON file
                 with open(json_file) as f:
                     area_object = json.load(f)
@@ -434,7 +435,6 @@ class EarthSpy:
 
         # set Downloads folder as default main store folder
         if not store_folder:
-
             store_folder = f"{Path.home()}/Downloads/earthspy"
 
             # set earthspy folder as default sub store folder
@@ -499,7 +499,6 @@ class EarthSpy:
         nb_ypixels = (dy / trial_resolutions).astype(int)
 
         try:
-
             # get max resolution while staying below Sentinel Hub max dimensions
             max_resolution = trial_resolutions[
                 (nb_xpixels < 2500) & (nb_ypixels < 2500)
@@ -507,7 +506,6 @@ class EarthSpy:
 
         # identify why max resolution was not found in trial resolutions
         except IndexError:
-
             # find the origin
             if np.sum(nb_xpixels < 2500) == 0 and np.sum(nb_ypixels < 2500) == 0:
                 origin = "x and y"
@@ -544,7 +542,6 @@ class EarthSpy:
 
         # resolution cant be higher than max resolution in D download mode
         if self.download_mode == "D" and self.resolution < max_resolution:
-
             self.resolution = max_resolution
             if self.verbose:
                 print(
@@ -557,7 +554,6 @@ class EarthSpy:
 
         # resolution can't be higher than raw data
         if self.resolution < self.data_collection_resolution:
-
             self.resolution = self.data_collection_resolution
             if self.verbose:
                 print(
@@ -571,7 +567,6 @@ class EarthSpy:
             max_resolution == self.data_collection_resolution
             and self.download_mode == "SM"
         ):
-
             self.download_mode = "D"
             if self.verbose:
                 print(
@@ -686,7 +681,6 @@ class EarthSpy:
 
         # if not set, set default evaluation script
         if evaluation_script is None:
-
             if self.satellite == "SENTINEL2":
                 self.get_evaluation_script_from_link(
                     "https://custom-scripts.sentinel-hub.com/custom-scripts/"
@@ -700,14 +694,12 @@ class EarthSpy:
 
         # if a URL, extract text
         elif validators.url(evaluation_script):
-
             self.evaluation_script = self.get_evaluation_script_from_link(
                 evaluation_script
             )
 
         # if a str, set attribute directly
         elif isinstance(evaluation_script, str):
-
             self.evaluation_script = evaluation_script
 
         return self.evaluation_script
@@ -788,7 +780,6 @@ class EarthSpy:
         )
 
         if self.algorithm == "SICE":
-
             self.response_files = [
                 "r_TOA_01",
                 "r_TOA_06",
@@ -880,7 +871,6 @@ class EarthSpy:
         """
 
         for folder in folders:
-
             # open Tape ARchive file produced by Sentinel Hub API
             tar = tarfile.open(f"{folder}/response.tar", "r:")
 
@@ -910,7 +900,6 @@ class EarthSpy:
         self.output_filenames = []
 
         for folder in folders:
-
             # open request JSON file
             with open(f"{folder}/request.json") as json_file:
                 request = json.load(json_file)
@@ -923,7 +912,6 @@ class EarthSpy:
 
             # if SICE, store files in date subfolders if multiple outputs
             if self.algorithm == "SICE":
-
                 # build folder name
                 date_folder = f"{self.store_folder}/{date}"
 
@@ -936,7 +924,6 @@ class EarthSpy:
 
             # if D download mode, set file name using date and data collection
             if self.download_mode == "D":
-
                 # build new file name
                 new_filename = (
                     f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
@@ -944,9 +931,7 @@ class EarthSpy:
 
                 # If SICE, don't rename file but move to date folder
                 if self.algorithm == "SICE":
-
                     for f in date_files:
-
                         # include date in path
                         os.rename(
                             f, f"{self.store_folder}/{date}/{f.split(os.sep)[-1]}"
@@ -957,7 +942,6 @@ class EarthSpy:
 
             # if SM download mode, set file name using date, data collection and box id
             elif self.download_mode == "SM":
-
                 # recreate split box
                 split_box = shb.BBox(
                     list(request_tree.execute("$..bbox")),
@@ -977,9 +961,7 @@ class EarthSpy:
 
                 # if SICE, add split box id in all names and move to date folder
                 if self.algorithm == "SICE":
-
                     for f in date_files:
-
                         # extract absolute path
                         absolute_file_name = f.split(os.sep)[-1]
                         new_absolute_file_name = absolute_file_name.replace(
@@ -999,13 +981,11 @@ class EarthSpy:
 
             # rename file using new file name
             if os.path.exists(f"{folder}/response.tiff"):
-
                 os.rename(f"{folder}/response.tiff", new_filename)
                 self.output_filenames.append(new_filename)
 
         # remove raw storage folders (and not date folders!)
         for name in os.listdir(self.store_folder):
-
             if (
                 os.path.isdir(os.path.join(self.store_folder, name))
             ) and "-" not in name:
@@ -1034,7 +1014,6 @@ class EarthSpy:
         # merge rasters for each distinct date (work with distinct dates because
         # of different trees depending on the algorithm used)
         for date in distinct_dates:
-
             # select files matching acquisition date only
             date_output_files = [f for f in self.output_filenames if date in f]
 
@@ -1047,7 +1026,6 @@ class EarthSpy:
                 file_iterator = ["tif"]
 
             for pattern in file_iterator:
-
                 date_response_files = [f for f in date_output_files if pattern in f]
 
                 # set file name of merged raster: replace split box id by mosaic
