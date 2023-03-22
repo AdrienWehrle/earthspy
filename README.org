@@ -68,7 +68,7 @@ job = es.EarthSpy("/path/to/auth.txt")
 
 # as simple as it gets
 job.set_query_parameters(
-    bounding_box=[-51.13, 69.204, -51.06, 69.225], # format (also in doc): [min_x, min_y, max_x, max_y]
+    bounding_box=[-51.13, 69.204, -51.06, 69.225], # format from doc: [min_x, min_y, max_x, max_y]
     time_interval=["2019-08-03", "2019-08-10"],
     evaluation_script="https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/true_color/script.js",
     data_collection="SENTINEL2_L2A",
