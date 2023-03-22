@@ -15,7 +15,6 @@ import sentinelhub as shb
 
 
 class TestEarthspy:
-
     # create local variables from environment secrets for convenience
     SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
     SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
@@ -127,13 +126,13 @@ class TestEarthspy:
         assert isinstance(self.t1.satellite, str)
         assert self.t1.satellite == "SENTINEL2"
 
-    def test_get_data_collection_resolution(self) -> None:
+    def test_get_raw_data_collection_resolution(self) -> None:
         """Test resolution selection"""
 
         # check if data resolution was set correctly
-        assert self.t1.data_collection_resolution == 10
-        assert self.t2.data_collection_resolution == 10
-        assert self.t3.data_collection_resolution == 10
+        assert self.t1.raw_data_collection_resolution == 10
+        assert self.t2.raw_data_collection_resolution == 10
+        assert self.t3.raw_data_collection_resolution == 10
 
     def test_set_number_of_cores(self) -> None:
         """Test selection of number of cores for multiprocessing"""
