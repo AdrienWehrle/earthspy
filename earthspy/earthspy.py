@@ -158,7 +158,7 @@ class EarthSpy:
         self.data_collection_str = data_collection
         self.get_data_collection()
         self.get_satellite_name()
-        self.get_data_collection_resolution()
+        self.get_raw_data_collection_resolution()
 
         # set number of cores
         self.set_number_of_cores(nb_cores)
@@ -263,24 +263,26 @@ class EarthSpy:
 
         return self.satellite
 
-    def get_data_collection_resolution(self) -> int:
-        """Get raw data collection resolution.
+    def get_raw_data_collection_resolution(self) -> int:
+        """Get lowest raw data collection resolution possible (then
+        refined at the download stage).
 
         :return: Data collection resolution.
         :rtype: int
+
         """
 
         # set default satellite resolution
         if self.satellite == "SENTINEL1":
-            self.data_collection_resolution = 5
+            self.raw_data_collection_resolution = 5
         elif self.satellite == "SENTINEL2":
-            self.data_collection_resolution = 10
+            self.raw_data_collection_resolution = 10
         elif self.satellite == "SENTINEL3":
-            self.data_collection_resolution = 300
+            self.raw_data_collection_resolution = 300
         elif self.satellite == "LANDSAT":
-            self.data_collection_resolution = 15
+            self.raw_data_collection_resolution = 15
         else:
-            self.data_collection_resolution = 1000
+            self.raw_data_collection_resolution = 1000
 
             if self.verbose:
                 print(
@@ -289,7 +291,7 @@ class EarthSpy:
                     "be refined."
                 )
 
-        return self.data_collection_resolution
+        return self.raw_data_collection_resolution
 
     def set_number_of_cores(self, nb_cores) -> int:
         """Set number of cores if not specificed by user.
@@ -488,7 +490,7 @@ class EarthSpy:
         self.convert_bounding_box_coordinates()
 
         # set an array of trial resolutions
-        trial_resolutions = np.arange(self.data_collection_resolution, 10000)
+        trial_resolutions = np.arange(self.raw_data_collection_resolution, 10000)
 
         # compute x and y dimensions in meters
         dx = np.abs(self.bounding_box_UTM_list[2] - self.bounding_box_UTM_list[0])
@@ -538,7 +540,7 @@ class EarthSpy:
         if not self.resolution and self.download_mode == "D":
             self.resolution = max_resolution
         elif not self.resolution and self.download_mode == "SM":
-            self.resolution = self.data_collection_resolution
+            self.resolution = self.raw_data_collection_resolution
 
         # resolution cant be higher than max resolution in D download mode
         if self.download_mode == "D" and self.resolution < max_resolution:
@@ -552,19 +554,9 @@ class EarthSpy:
                     "the highest resolution independently of the area."
                 )
 
-        # resolution can't be higher than raw data
-        if self.resolution < self.data_collection_resolution:
-            self.resolution = self.data_collection_resolution
-            if self.verbose:
-                print(
-                    "The resolution prescribed is higher than "
-                    "the raw data set resolution. Resolution is set "
-                    "to raw resolution."
-                )
-
         # dont use SM download mode if D can be used with full resolution
         if (
-            max_resolution == self.data_collection_resolution
+            max_resolution == self.raw_data_collection_resolution
             and self.download_mode == "SM"
         ):
             self.download_mode = "D"
@@ -597,8 +589,8 @@ class EarthSpy:
         trial_split_boxes = np.arange(2, 100)
 
         # x and y pixel dimensions for each trial split box
-        boxes_pixels_x = (dx / trial_split_boxes) / self.data_collection_resolution
-        boxes_pixels_y = (dy / trial_split_boxes) / self.data_collection_resolution
+        boxes_pixels_x = (dx / trial_split_boxes) / self.resolution
+        boxes_pixels_y = (dy / trial_split_boxes) / self.resolution
 
         # get minimum number of split boxes needed to stay below Sentinel Hub max dimensions
         min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
