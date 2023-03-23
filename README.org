@@ -1,9 +1,9 @@
 [[https://www.repostatus.org/badges/latest/wip.svg][https://www.repostatus.org/badges/latest/wip.svg]]
 [[https://www.gnu.org/licenses/gpl-3.0][https://img.shields.io/badge/License-GPLv3-blue.svg]]
 [[https://github.com/AdrienWehrle/earthspy/actions][file:https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg]]
+[[https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml][https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml/badge.svg]]
 [[https://codecov.io/gh/AdrienWehrle/earthspy][https://codecov.io/gh/AdrienWehrle/earthspy/branch/main/graph/badge.svg]]
 [[https://github.com/psf/black][https://img.shields.io/badge/code%20style-black-000000.svg]]
-[[https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml][https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml/badge.svg]]
 
 * earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia: :moon:
 
