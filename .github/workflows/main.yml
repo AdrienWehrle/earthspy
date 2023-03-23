@@ -62,11 +62,19 @@ jobs:
           name: codecov-umbrella
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
-          
+
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python@master
+        uses: snyk/actions/setup@master
+        run: snyk test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --file=/home/runner/work/earthspy/dev-requirements.txt --severity-threshold=high        
+        # with:
+        #   args: --severity-threshold=high
+          
+      # - name: Run Snyk to check for vulnerabilities
+      #   uses: snyk/actions/python@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: --file=/home/runner/work/earthspy/dev-requirements.txt --severity-threshold=high        
           
