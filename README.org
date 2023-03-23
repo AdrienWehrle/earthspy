@@ -8,7 +8,7 @@
 
 * earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia: :moon:
 
-=earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications. Just like a spy!
+=earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications.
 
 Some useful capabilities: 
   - Data download in multiprocessing
