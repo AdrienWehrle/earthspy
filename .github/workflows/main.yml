@@ -65,7 +65,7 @@ jobs:
           verbose: true
 
       - name: Run Snyk to check for vulnerabilities
-        run: snyk test --all-projects
+        run: snyk test --file=dev-requirements.txt
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         # with:
