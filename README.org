@@ -57,7 +57,7 @@ At present =earthspy= can be run by users within a couple of lines of Python cod
 - set query parameters including Sentinel Hub API variables and =earthspy= additional ones (mainly for download efficiency)
 - send request
 
-Below is presented a simple application of =earthspy= for the download of Sentinel-2 data download around Ilulissat, Greenland for few days in August 2019 using a True Color custom script available on Sentinel Hub's [[https://custom-scripts.sentinel-hub.com][custom script online repository]].
+Below is presented a simple application of =earthspy= for the download of Sentinel-2 data download around Ilulissat, Greenland for few days in August 2019 using a True Color custom script available on Sentinel Hub's [[https://custom-scripts.sentinel-hub.com][custom script online repository]]. All other available data collections can be found [[https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html][here]].
 
 #+begin_src python
 
