@@ -211,15 +211,6 @@ class EarthSpy:
         # create a copy of shb configuration to get catalog
         self.catalog_config = self.config.copy()
 
-        # set Sentinel-3 specific base URL of deployment
-        if (
-            self.data_collection_str == "SENTINEL3_OLCI"
-            or self.data_collection_str == "LANDSAT_OT_L2"
-        ):
-            self.catalog_config.sh_base_url = shb.DataCollection[
-                self.data_collection_str
-            ].service_url
-
         # setup Sentinel Hub Catalog API (with STAC Specification)
         self.catalog = shb.SentinelHubCatalog(config=self.catalog_config)
 
@@ -233,8 +224,33 @@ class EarthSpy:
             for d in self.user_date_range
         ]
 
-        # store metadata of available scenes
-        self.metadata = [list(iterator) for iterator in search_iterator]
+        # some data sets require a difference service_url, test search_iterator
+        # and update service_url if dowload failed
+        try:
+            # store metadata of available scenes
+            self.metadata = [list(iterator) for iterator in search_iterator]
+
+        except shb.exceptions.DownloadFailedException:
+            # set specific base URL of deployment
+            self.catalog_config.sh_base_url = shb.DataCollection[
+                self.data_collection_str
+            ].service_url
+
+            # setup Sentinel Hub Catalog API (with STAC Specification)
+            self.catalog = shb.SentinelHubCatalog(config=self.catalog_config)
+
+            # search catalog based on user inputs
+            search_iterator = [
+                self.catalog.search(
+                    self.data_collection,
+                    bbox=self.bounding_box,
+                    time=d.strftime("%Y-%m-%d"),
+                )
+                for d in self.user_date_range
+            ]
+
+            # store metadata of available scenes
+            self.metadata = [list(iterator) for iterator in search_iterator]
 
         # create date +-1 hour around acquisition time
         time_difference = timedelta(hours=1)
