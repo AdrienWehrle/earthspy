@@ -42,7 +42,7 @@ jobs:
           VALIDATE_YAML: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
+
       - name: Run tests and generate coverage report
         shell: bash -l {0}
         run: |
@@ -65,7 +65,7 @@ jobs:
           verbose: true
 
       - name: Run Snyk to check for vulnerabilities
-        run: snyk test
+        run: snyk test --all-projects
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         # with:
