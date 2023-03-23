@@ -62,6 +62,11 @@ jobs:
           name: codecov-umbrella
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
-
-      - name: Safety check
-        uses: AlicanAkkus/pinder-action@0.1
+          
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        
