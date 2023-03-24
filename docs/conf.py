@@ -79,9 +79,9 @@ templates_path = [os.path.join(os.path.dirname(__file__), "_templates")]
 import earthspy
 
 # The short X.Y version
-version = "v0.1"
+version = "v0.3"
 # The full version, including alpha/beta/rc tags.
-release = "v0.1.0"
+release = "v0.3.0"
 
 
 # List of patterns, relative to source directory, that match files and
