@@ -67,7 +67,7 @@ jobs:
       - name: Run Snyk to check for vulnerabilities
         run: |
           pip install -r dev-requirements.txt
-          snyk fix --file=dev-requirements.txt --package-manager=pip
+          snyk test --file=dev-requirements.txt --package-manager=pip --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         # with:
