@@ -883,7 +883,7 @@ class EarthSpy:
             tar = tarfile.open(f"{folder}/response.tar", "r:")
 
             # extract all members from the archive
-            tar.extractall(path=folder)
+            tar.extractall(path=folder, filter="data")
 
             # close the TAR file
             tar.close()

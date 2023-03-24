@@ -10,6 +10,7 @@ jobs:
             os: ["ubuntu-latest"]
     steps:
       - uses: actions/checkout@v2
+      - uses: snyk/actions/setup@master
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: test
@@ -41,7 +42,7 @@ jobs:
           VALIDATE_YAML: true
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
+
       - name: Run tests and generate coverage report
         shell: bash -l {0}
         run: |
@@ -63,5 +64,10 @@ jobs:
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
 
-      - name: Safety check
-        uses: AlicanAkkus/pinder-action@0.1
+      - name: Run Snyk to check for vulnerabilities
+        run: |
+          pip install -r dev-requirements.txt
+          snyk test --file=dev-requirements.txt --package-manager=pip --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
