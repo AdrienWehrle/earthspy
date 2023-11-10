@@ -12,3 +12,4 @@ dependencies:
   - rasterio
   - sentinelhub >= 3.4
   - pip
+  - pyproj
