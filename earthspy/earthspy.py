@@ -15,6 +15,7 @@ import objectpath
 import os
 import pandas as pd
 from pathlib import Path
+from pyproj import Geod
 import rasterio
 from rasterio.merge import merge
 import requests
@@ -76,6 +77,7 @@ class EarthSpy:
         bounding_box: Union[list, str],
         time_interval: Union[int, tuple],
         data_collection: str,
+        point_buffer: float = 0.0,
         evaluation_script: Union[None, str] = None,
         algorithm: Union[None, str] = None,
         resolution: Union[None, int] = None,
@@ -89,7 +91,8 @@ class EarthSpy:
         """Define a set of parameters used for the API request.
 
         :param bounding_box: Area footprint with the format [min_x, min_y,
-          max_x, max_y]. An area name stored in a JSON database can also be
+          max_x, max_y] or [x, y] in the case of a point of interest.
+          An area name stored in a JSON database can also be
           passed.
         :type bounding_box: Union[list, str]
 
@@ -111,6 +114,11 @@ class EarthSpy:
           shb.DataCollection.get_available_collections() for a list of all
           collections currently available.
         :type data_collection: str
+
+        :param point_buffer: Distance in meters to consider around
+          point of interest in the case of a [x, y] footprint format.
+          Default is 0 meters (extracting the very pixel only).
+        :type point_buffer: float
 
         :param resolution: Resolution in meters to use for data download,
           defaults to None. If not specified, the raw data collection resolution
@@ -165,6 +173,7 @@ class EarthSpy:
 
         # set initial spatial and temporal coverage
         self.get_date_range(time_interval)
+        self.point_buffer = point_buffer
         self.get_bounding_box(bounding_box)
 
         self.resolution = resolution
@@ -385,8 +394,8 @@ class EarthSpy:
         """Get bounding box for data download depending on user specifications.
 
         :param bounding_box: Area footprint with the format [min_x, min_y,
-          max_x, max_y]. An area name stored in a JSON database can also be
-          passed.
+          max_x, max_y] or [x, y] in the case of a point of interest. An
+          area name stored in a JSON database can also be passed.
         :type bounding_box: Union[list, str]
 
         :return: Area footprint as a Sentinelhub BBox geometry.
@@ -395,8 +404,36 @@ class EarthSpy:
 
         # if a list, set Sentinel Hub BBox wit bounding_box
         if isinstance(bounding_box, list):
-            # create Sentinel Hub BBox
-            self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
+            # if bounding box is in [min_x, min_y, max_x, max_y] format
+            if len(bounding_box) == 4:
+                # create Sentinel Hub BBox
+                self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
+
+            # if bounding box is in [x, y] point of interest format
+            elif len(bounding_box) == 2:
+                # bounding box can't use similar coordinates as minimum
+                # and maximum x, y, so set a distance that's much lower
+                # than satellite resolutions (1mm)
+                if self.point_buffer == 0:
+                    distance = 1e-3
+
+                # initialize a Geod class instance to make geodetic
+                # computations
+                geod = Geod(ellps="WGS84")
+
+                # compute minimum and maximum x and y from point of
+                # interest and distance from it (45-degree angle)
+                xmin, ymin, azimuthmin = geod.fwd(
+                    lons=bounding_box[0], lats=bounding_box[1], az=45, dist=-distance
+                )
+                xmax, ymax, azimuthmin = geod.fwd(
+                    lons=bounding_box[0], lats=bounding_box[1], az=45, dist=distance
+                )
+
+                # create Sentinel Hub BBox
+                self.bounding_box = shb.BBox(
+                    bbox=[xmin, ymin, xmax, ymax], crs=shb.CRS.WGS84
+                )
 
             # cant guess name, so set to None
             self.bounding_box_name = None
