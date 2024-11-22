@@ -11,4 +11,5 @@ dependencies:
   - pandas
   - rasterio
   - sentinelhub >= 3.4
+  - validators
   - pip
