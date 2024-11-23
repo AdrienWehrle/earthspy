@@ -10,7 +10,7 @@ jobs:
             os: ["ubuntu-latest"]
     steps:
       - uses: actions/checkout@v4
-      - uses: snyk/actions/node@master
+      - uses: snyk/actions/setup@master
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
@@ -61,7 +61,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}          
