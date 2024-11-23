@@ -64,3 +64,5 @@ jobs:
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}          
+        with:
+          args: --file=dev-requirements.txt --package-manager=pip --severity-threshold=high
