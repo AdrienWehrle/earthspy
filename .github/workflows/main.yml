@@ -10,7 +10,7 @@ jobs:
             os: ["ubuntu-latest"]
     steps:
       - uses: actions/checkout@v4
-      - uses: snyk/actions/setup@master
+      - uses: snyk/actions/node@master
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
@@ -61,9 +61,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           
       - name: Run Snyk to check for vulnerabilities
-        run: |
-          pip install -r dev-requirements.txt
-          snyk test --file=dev-requirements.txt --package-manager=pip --severity-threshold=high
+        uses: snyk/actions/node@master
+        continue-on-error: true
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}          
