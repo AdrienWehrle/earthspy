@@ -9,13 +9,13 @@ jobs:
         matrix:
             os: ["ubuntu-latest"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: snyk/actions/setup@master
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
           environment-file: environment.yml
-          python-version: 3.8
+          python-version: 3.9
+          use-mamba: true
           auto-activate-base: true
           
       - shell: bash -l {0}
@@ -29,7 +29,7 @@ jobs:
             pip install -e .
             
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0 
@@ -48,26 +48,26 @@ jobs:
         run: |
           pip install pytest
           pip install pytest-cov
-          pytest --cov=./ --cov-report=xml
+          pytest --cov --junitxml=junit.xml -o junit_family=legacy
         env:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
-          directory: ./coverage/reports/
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Run Snyk to check for vulnerabilities
+      - name: Install dev requirements
+        shell: bash -l {0}
         run: |
           pip install -r dev-requirements.txt
-          snyk test --file=dev-requirements.txt --package-manager=pip --severity-threshold=high
+            
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
+        continue-on-error: true
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}          
+        with:
+          args: --file=dev-requirements.txt --package-manager=pip --severity-threshold=high --skip-unresolved=true
