@@ -58,7 +58,12 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          
+
+      - name: Install dev requirements
+        shell: bash -l {0}
+        run: |
+          pip install -r dev-requirements.txt
+            
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         continue-on-error: true
