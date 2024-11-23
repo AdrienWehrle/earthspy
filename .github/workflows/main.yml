@@ -10,7 +10,6 @@ jobs:
             os: ["ubuntu-latest"]
     steps:
       - uses: actions/checkout@v4
-      - uses: snyk/actions/setup@master
       - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
