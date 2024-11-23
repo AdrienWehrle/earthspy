@@ -63,6 +63,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: rdf-ext/rdf-sparql-builder
           verbose: true
 
       - name: Run Snyk to check for vulnerabilities
