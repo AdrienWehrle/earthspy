@@ -9,13 +9,14 @@ jobs:
         matrix:
             os: ["ubuntu-latest"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: snyk/actions/setup@master
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: test
           environment-file: environment.yml
-          python-version: 3.8
+          python-version: 3.9
+          use-mamba: true
           auto-activate-base: true
           
       - shell: bash -l {0}
