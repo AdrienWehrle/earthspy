@@ -55,7 +55,7 @@ jobs:
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         with:
           directory: ./coverage/reports/
           fail_ci_if_error: true
@@ -63,7 +63,6 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: rdf-ext/rdf-sparql-builder
           verbose: true
 
       - name: Run Snyk to check for vulnerabilities
