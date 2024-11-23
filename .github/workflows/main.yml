@@ -49,22 +49,17 @@ jobs:
         run: |
           pip install pytest
           pip install pytest-cov
-          pytest --cov=./ --cov-report=xml
+          pytest --cov --junitxml=junit.xml -o junit_family=legacy
         env:
           SH_CLIENT_ID: ${{ secrets.SH_CLIENT_ID }}
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
-          directory: ./coverage/reports/
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true
-
+          
       - name: Run Snyk to check for vulnerabilities
         run: |
           pip install -r dev-requirements.txt
