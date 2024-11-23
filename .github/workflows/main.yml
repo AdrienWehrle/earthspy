@@ -30,7 +30,7 @@ jobs:
             pip install -e .
             
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0 
@@ -55,15 +55,15 @@ jobs:
           SH_CLIENT_SECRET: ${{ secrets.SH_CLIENT_SECRET }}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          directory: ./coverage/reports/
-          fail_ci_if_error: true
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
+        uses: codecov/codecov-action@v5
+            with:
+              directory: ./coverage/reports/
+              fail_ci_if_error: true
+              files: ./coverage.xml
+              flags: unittests
+              name: codecov-umbrella
+              token: ${{ secrets.CODECOV_TOKEN }}
+              verbose: true
 
       - name: Run Snyk to check for vulnerabilities
         run: |
