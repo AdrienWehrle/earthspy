@@ -228,8 +228,13 @@ class EarthSpy:
         # and update service_url if dowload failed
         try:
             # store metadata of available scenes
-            self.metadata = [list(iterator) for iterator in search_iterator]
-
+            self.metadata = {}
+            for iterator in search_iterator:
+                iterator_list = list(iterator)
+                if len(iterator_list) > 0:
+                    date = iterator_list[0]["properties"]["datetime"].split("T")[0]
+                    self.metadata[date] = iterator_list            
+                    
         except shb.exceptions.DownloadFailedException:
             # set specific base URL of deployment
             self.catalog_config.sh_base_url = shb.DataCollection[
@@ -250,8 +255,13 @@ class EarthSpy:
             ]
 
             # store metadata of available scenes
-            self.metadata = [list(iterator) for iterator in search_iterator]
-
+            self.metadata = {}
+            for iterator in search_iterator:
+                iterator_list = list(iterator)
+                if len(iterator_list) > 0:
+                    date = iterator_list[0]["properties"]["datetime"].split("T")[0]
+                    self.metadata[date] = iterator_list  
+                    
         # create date +-1 hour around acquisition time
         time_difference = timedelta(hours=1)
 
@@ -1065,7 +1075,7 @@ class EarthSpy:
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
-
+                    dst.update_tags(**{k:self.metadata[date][0][k] for k in ["id"]})
                 # save file name of merged raster
                 self.output_filenames_renamed.append(date_output_filename)
 
