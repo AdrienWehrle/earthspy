@@ -1071,11 +1071,11 @@ class EarthSpy:
                         "transform": output_transform,
                     }
                 )
-
+                id_dict = {k:self.metadata[date][0][k] for k in ["id"]}
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
-                    dst.update_tags(**{k:self.metadata[date][0][k] for k in ["id"]})
+                    dst.update_tags(**id_dict)
                 # save file name of merged raster
                 self.output_filenames_renamed.append(date_output_filename)
 
