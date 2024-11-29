@@ -85,7 +85,6 @@ class EarthSpy:
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
-        compression: str = None
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -172,9 +171,6 @@ class EarthSpy:
 
         # set and correct resolution
         self.set_correct_resolution()
-        
-        # set compress mode
-        self.get_raster_compression()
 
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
@@ -191,19 +187,6 @@ class EarthSpy:
             self.set_split_boxes_ids()
 
         return None
-
-    def get_raster_compression(self) -> str:
-        """Verify valid keyword for raster compression
-        
-        :return: Compression mode
-        """
-        
-        if compress_mode in ['DEFLATE','LZW','PACKBITS','JPEG', 'WEBP','LZMA','ZSTD']:
-           self.compress_mode = compress_mode
-        else:
-          raise KeyError("Compression mode not found")
-        
-        return self.compress_mode
 
     def get_data_collection(self) -> shb.DataCollection:
         """Get Sentinel Hub DataCollection object from data collection name.
@@ -1076,7 +1059,6 @@ class EarthSpy:
                         "height": mosaic.shape[1],
                         "width": mosaic.shape[2],
                         "transform": output_transform,
-                        "compress": self.compress_mode
                     }
                 )
 
