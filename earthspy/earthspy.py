@@ -196,7 +196,7 @@ class EarthSpy:
 
         return None
 
-    def get_raster_compression(self, raster_compression) -> str:
+    def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
         """Verify valid keyword for raster compression
         
         :return: Compression mode
