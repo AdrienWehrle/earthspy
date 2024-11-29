@@ -174,8 +174,7 @@ class EarthSpy:
         self.set_correct_resolution()
         
         # set compress mode
-        
-        self.compress_mode = compression
+        self.get_raster_compression()
 
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
@@ -193,13 +192,18 @@ class EarthSpy:
 
         return None
 
-    def get_raster_compression(self) -> None:
+    def get_raster_compression(self) -> str:
+        """Verify valid keyword for raster compression
         
-        try:
-            assert self.compress_mode in ['DEFLATE','LZW','PACKBITS','JPEG',
-                                            'WEBP','LZMA','ZSTD']
-        except:
-            print("Not a valid compression keyword")
+        :return: Compression mode
+        """
+        
+        if compress_mode in ['DEFLATE','LZW','PACKBITS','JPEG', 'WEBP','LZMA','ZSTD']:
+           self.compress_mode = compress_mode
+        else:
+          raise KeyError("Compression mode not found")
+        
+        return self.compress_mode
 
     def get_data_collection(self) -> shb.DataCollection:
         """Get Sentinel Hub DataCollection object from data collection name.
