@@ -85,7 +85,7 @@ class EarthSpy:
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
-        compression: str = None
+        raster_compression: str = None
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -146,6 +146,8 @@ class EarthSpy:
         :param verbose: Whether to print processing status or not, defaults
           to True.
         :type verbose: bool, optional
+        
+        :param raster_compression: Which raster compression mode to use or not
         """
 
         # set processing attributes
