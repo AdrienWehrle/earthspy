@@ -174,7 +174,7 @@ class EarthSpy:
         self.set_correct_resolution()
         
         # set compress mode
-        self.get_raster_compression()
+        self.get_raster_compression(compression)
 
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
@@ -192,7 +192,7 @@ class EarthSpy:
 
         return None
 
-    def get_raster_compression(self) -> str:
+    def get_raster_compression(self, compress_mode) -> str:
         """Verify valid keyword for raster compression
         
         :return: Compression mode
