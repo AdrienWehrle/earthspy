@@ -333,16 +333,16 @@ class TestEarthspy:
     def test_geojson(self) -> None:
         """Test geojson files"""
 
-        with open("earthspy/data/ilulissat.geojson", "r+") as files_geo:
-            data = json.load(files_geo)
-            array_coord = np.array(data["features"][0]["geometry"]
-                                       ['coordinates'][0])
-            
-            assert data["features"][0]["geometry"]['type'] == "Polygon"
-            assert array_coord.shape == (5, 2)
-            for n in array_coord:
-                for i in n:
-                    assert (-90 <= i <= 90)
+        for file in os.listdir("earthspy/data"):
+            with open(f"earthspy/data/{file}", "r+") as files_geo:
+                data = json.load(files_geo)
+                array_coord = np.array(data["features"][0]["geometry"]
+                                           ['coordinates'][0])
+                
+                assert data["features"][0]["geometry"]['type'] == "Polygon"
+                assert array_coord.shape == (5, 2)
+                assert ((array_coord >= -90) & (array_coord <= 90)).all()
+                assert array_coord[0, 0] == array_coord[-1, 0]
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
