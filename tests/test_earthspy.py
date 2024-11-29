@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import requests
 import sentinelhub as shb
-
+import json
 
 class TestEarthspy:
     # create local variables from environment secrets for convenience
@@ -329,6 +329,20 @@ class TestEarthspy:
         )
         # # check that a Sentinel Hub request was created
         assert isinstance(sr2, shb.SentinelHubRequest)
+
+    def test_geojson(self) -> None:
+        """Test geojson files"""
+
+        with open("earthspy/data/ilulissat.geojson", "r+") as files_geo:
+            data = json.load(files_geo)
+            array_coord = np.array(data["features"][0]["geometry"]
+                                       ['coordinates'][0])
+            
+            assert data["features"][0]["geometry"]['type'] == "Polygon"
+            assert array_coord.shape == (5, 2)
+            for n in array_coord:
+                for i in n:
+                    assert (-90 <= i <= 90)
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
