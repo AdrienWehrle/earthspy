@@ -147,7 +147,9 @@ class EarthSpy:
           to True.
         :type verbose: bool, optional
         
-        :param raster_compression: Which raster compression mode to use or not
+        :param raster_compression: Raster compression to apply following methods
+          available in rasterio, defaults to None.
+        :type raster_compression: Union[None, str], optional
         """
 
         # set processing attributes
