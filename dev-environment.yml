@@ -1,0 +1,23 @@
+name: earthspy-dev
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - numpy
+  - objectpath
+  - pandas
+  - rasterio
+  - validators
+  - sentinelhub >= 3.4
+  - pip
+  - flake8
+  - pytest
+  - pytest-lazy-fixture
+  - sphinx
+  - sphinx_rtd_theme
+  - pylint
+  - sphinxcontrib_programoutput
+  - sphinx_autodoc_typehints
+  - pre-commit
+  - sphinx-gallery
+
