@@ -1,4 +1,4 @@
-*** Introduction
+* Introduction
 
 First off, thank you for considering contributing to =earthspy=! 😊
 
@@ -12,9 +12,9 @@ Any kind of contribution is more than welcome. Improving
 documentation, bug triaging, implementing new features or writing
 tutorials are all examples of helpful contributions. 🚀
 
-*** Making a contribution
+* Making a contribution
 
-**** Overview
+** Overview
 
  1. Fork =AdrienWehrle/earthspy= and clone your fork repository locally.
  2. Set up the development environment (section below).
@@ -25,9 +25,9 @@ tutorials are all examples of helpful contributions. 🚀
  7. Open a pull request from GitHub to discuss and eventually merge.
 
 
-**** Step by step
+** Step by step
 
-***** Setup
+*** Setup
 
 Clone the git repository and create a [[https://docs.conda.io/projects/conda/en/latest/index.html][conda]] or [[https://mamba.readthedocs.io/en/latest/index.html][mamba]] environment. If
 you use mamba (mamba is great), just replace =conda= for =mamba=
@@ -55,7 +55,7 @@ pip install -e .
 
 #+end_src
 
-***** Tests
+*** Tests
 
 If your PR targets the implementation of a new feature or the
 improvement of existing ones, please add at least one test per feature
@@ -69,7 +69,7 @@ pytest
 #+end_src
 
 
-***** Formatting and linting
+*** Formatting and linting
 
 Before you make your commit, please install =pre-commit= (see
 [[https://pre-commit.com/][pre-commit documentation]]), which will use =.pre-commit-config.yaml= to
@@ -92,9 +92,10 @@ automatically ensure checks have to pass before committing.
 Once all =pre-commit= checks have passed (or you need help),
 please commit your changes with short and clear messages.
 
-*** Reporting a bug
 
-**** Security disclosures
+* Reporting a bug
+
+** Security disclosures
 
 If you find a security vulnerability, please do not open an
 issue. Email adrien.wehrle@hotmail.fr instead.
@@ -106,7 +107,7 @@ ask yourself these two questions:
   have access to?
 - Can I disable something for other people?
 
-**** How to file a bug report
+** How to file a bug report
 
 When filing an issue at
 [[earthspy/issues][https://github.com/AdrienWehrle/earthspy/issues]], make sure to answer
@@ -120,11 +121,11 @@ these five questions:
 - What did you see instead?
 
 
-*** Rights
+* Rights
 
 The license (see =LICENSE=) applies to all contributions.
 
-*** Credits
+* Credits
 
 Part of this document is based on [[https://github.com/nayafia][nayafia]]'s [[https://github.com/nayafia/contributing-template/blob/master/CONTRIBUTING-template.md][CONTRIBUTING]] template and
 [[https://github.com/GlacioHack/geoutils/blob/main/CONTRIBUTING.md][geoutils CONTRIBUTING]].
