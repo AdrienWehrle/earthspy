@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
 """
 
-import earthspy.earthspy as es
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import requests
 import sentinelhub as shb
+
+import earthspy.earthspy as es
 
 
 class TestEarthspy:
@@ -36,7 +37,8 @@ class TestEarthspy:
           // Set gain for visualisation
           let gain = 2.5;
           // Return RGB
-          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain, sample.dataMask];
+          return [sample.B04 * gain, sample.B03 * gain, sample.B02 * gain,
+                  sample.dataMask];
         }
         """
 
@@ -100,7 +102,7 @@ class TestEarthspy:
         assert self.t1.config.sh_client_secret == os.environ["SH_CLIENT_SECRET"]
 
     def test_set_query_parameters(self) -> None:
-        """Test direct attribute assignement."""
+        """Test direct attribute assignment."""
 
         # check if attributes were set accordingly
         assert self.t1.download_mode is not None
@@ -249,9 +251,9 @@ class TestEarthspy:
 
         r2 = self.t3.set_correct_resolution()
         # check that query resolution was set correctly
-        assert r1 == 10
+        assert r2 == 10
         # check that download mode was set correctly
-        assert isinstance(self.t1.download_mode, str)
+        assert isinstance(self.t3.download_mode, str)
 
     def test_list_requests(self) -> None:
         """Test request listing"""
@@ -299,9 +301,9 @@ class TestEarthspy:
         """Test split box ID generation"""
 
         sbi1 = self.t1.set_split_boxes_ids()
-        # check that split box ids were saved in dictionnary
+        # check that split box ids were saved in dictionary
         assert isinstance(sbi1, dict)
-        # check that dictionnary has the right shape
+        # check that dictionary has the right shape
         assert len(sbi1) == 4
 
     def test_get_evaluation_script(self) -> None:

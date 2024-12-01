@@ -1,0 +1,98 @@
+# based on Glaciohack pre-commit config
+ci:
+    autofix_prs: false
+    autoupdate_schedule: quarterly
+repos:
+        - repo: https://github.com/pre-commit/pre-commit-hooks
+          rev: v5.0.0
+          hooks:
+                - id: check-yaml
+                - id: end-of-file-fixer
+                  exclude: \.txt$
+                - id: trailing-whitespace  # Remove trailing
+                                           # whitespaces
+                - id: check-merge-conflict
+        # Fix common spelling mistakes
+        - repo: https://github.com/codespell-project/codespell
+          rev: v2.3.0
+          hooks:
+                - id: codespell
+                  args: [
+                  '--ignore-words-list', 'alos,inout,vor',
+                    '--ignore-regex', '\bnin\b',
+                    '--'
+                  ]
+                  types_or: [python, rst, markdown]
+                  files: ^(earthspy|docs|tests)/
+
+        # Replace relative imports
+        - repo: https://github.com/MarcoGorelli/absolufy-imports
+          rev: v0.3.1
+          hooks:
+                - id: absolufy-imports
+
+        # Format the code aggressively using black
+        - repo: https://github.com/psf/black
+          rev: 24.10.0
+          hooks:
+                  - id: black
+                    args: [--line-length=88]
+
+        # Lint the code using flake8
+        - repo: https://github.com/pycqa/flake8
+          rev: 7.1.1
+          hooks:
+                - id: flake8
+                  args: [
+                          '--max-line-length', '88', 
+                          '--extend-ignore', 'E203,B028', # flake8
+                                                          # disagrees
+                                                          # with
+                                                          # black, so
+                                                          # this
+                                                          # should be
+                                                          # ignored.
+                          '--'
+                  ]
+                  additional_dependencies:
+                          - flake8-comprehensions
+                          - flake8-bugbear
+                  files: ^(earthspy|tests)
+
+        # Sort imports using isort
+        - repo: https://github.com/PyCQA/isort
+          rev: 5.13.2
+          hooks:
+                  - id: isort
+                    args: [ "--profile", "black" ]
+
+        # Automatically upgrade syntax to a minimum version
+        - repo: https://github.com/asottile/pyupgrade
+          rev: v3.19.0
+          hooks:
+                - id: pyupgrade
+                  args: [--py37-plus]
+
+        # Various formattings
+        - repo: https://github.com/pre-commit/pygrep-hooks
+          rev: v1.10.0
+          hooks:
+                # Detect common mistake of using single backticks when
+                # writing rst
+                - id: rst-backticks
+                # Detect mistake of rst directive not ending with
+                # double colon or space before the double colon
+                - id: rst-directive-colons
+                  types: [text]
+                  types_or: [python, rst]
+                # Detect mistake of inline code touching normal text
+                # in rst
+                - id: rst-inline-touching-normal
+                  types: [text]
+                  types_or: [python, rst]
+                # Eval should never be used (can do arbitrary code
+                # execution)
+                - id: python-no-eval
+                # Enforce the use of type annotations instead of
+                # docstring type comments
+                - id: python-use-type-annotations

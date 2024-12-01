@@ -1,45 +1,46 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
 """
 
-from collections import Counter
-from datetime import datetime, timedelta
 import glob
 import json
-from multiprocessing import cpu_count
-import numpy as np
-import objectpath
 import os
-import pandas as pd
-from pathlib import Path
-import rasterio
-from rasterio.merge import merge
-import requests
-import sentinelhub as shb
 import shutil
 import tarfile
 import time
-from typing import Union, Tuple
+from collections import Counter
+from datetime import datetime, timedelta
+from multiprocessing import cpu_count
+from pathlib import Path
+from typing import Tuple, Union
+
+import numpy as np
+import objectpath
+import pandas as pd
+import rasterio
+import requests
+import sentinelhub as shb
 import validators
+from rasterio.merge import merge
 
 
 class EarthSpy:
-    """Monitor and study any place on Earth and in Near Real-Time (NRT) using the
-    SentinelHub services.
+    """Monitor and study any place on Earth and in Near Real-Time
+    (NRT) using the SentinelHub services.
+
     """
 
     def __init__(self, CLIENT_credentials_file: str) -> None:
         """
         :param CLIENT_credentials_file: full path to file containing credentials
-          with User's OAuth client ID (1st row) secrect (2nd row).
+          with User's OAuth client ID (1st row) secret (2nd row).
         :type CLIENT_credentials_file: str
         """
 
         # read credentials stored in text file
-        with open(CLIENT_credentials_file, "r") as file:
+        with open(CLIENT_credentials_file) as file:
             credentials = file.read().splitlines()
 
         # extract credentials from lines
@@ -48,8 +49,6 @@ class EarthSpy:
 
         # setup connection
         self.configure_connection()
-
-        return None
 
     def configure_connection(self) -> shb.SHConfig:
         """Build a shb configuration class for the connection to Sentinel Hub services.
@@ -225,7 +224,7 @@ class EarthSpy:
         ]
 
         # some data sets require a difference service_url, test search_iterator
-        # and update service_url if dowload failed
+        # and update service_url if download failed
         try:
             # store metadata of available scenes
             self.metadata = {}
@@ -233,8 +232,8 @@ class EarthSpy:
                 iterator_list = list(iterator)
                 if len(iterator_list) > 0:
                     date = iterator_list[0]["properties"]["datetime"].split("T")[0]
-                    self.metadata[date] = iterator_list            
-                    
+                    self.metadata[date] = iterator_list
+
         except shb.exceptions.DownloadFailedException:
             # set specific base URL of deployment
             self.catalog_config.sh_base_url = shb.DataCollection[
@@ -260,8 +259,8 @@ class EarthSpy:
                 iterator_list = list(iterator)
                 if len(iterator_list) > 0:
                     date = iterator_list[0]["properties"]["datetime"].split("T")[0]
-                    self.metadata[date] = iterator_list  
-                    
+                    self.metadata[date] = iterator_list
+
         # create date +-1 hour around acquisition time
         time_difference = timedelta(hours=1)
 
@@ -320,7 +319,7 @@ class EarthSpy:
         return self.raw_data_collection_resolution
 
     def set_number_of_cores(self, nb_cores) -> int:
-        """Set number of cores if not specificed by user.
+        """Set number of cores if not specified by user.
 
         :return: Number of cores to use in multithreading.
         :rtype: int
@@ -353,7 +352,8 @@ class EarthSpy:
         :rtype: pd.core.indexes.datetimes.DatetimeIndex
         """
 
-        # if an integer, create a datetimeIndex with the number of days from present date
+        # if an integer, create a datetimeIndex with the number of days
+        # from present date
         if isinstance(time_interval, int):
             # keep time_interval positive
             if time_interval < 0:
@@ -403,12 +403,12 @@ class EarthSpy:
         :rtype: sentinelhub.geometry.BBox
         """
 
-        # if a list, set Sentinel Hub BBox wit bounding_box
+        # if a list, set Sentinel Hub BBox with bounding_box
         if isinstance(bounding_box, list):
             # create Sentinel Hub BBox
             self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
 
-            # cant guess name, so set to None
+            # can't guess name, so set to None
             self.bounding_box_name = None
 
         # if a string, extract bounding box from corresponding GEOJSON file
@@ -472,7 +472,7 @@ class EarthSpy:
             if self.algorithm:
                 store_folder += f"{os.sep}{self.algorithm}"
 
-        # create subfolder if doesnt exist
+        # create subfolder if doesn't exist
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
@@ -482,7 +482,7 @@ class EarthSpy:
         return self.store_folder
 
     def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox, list]:
-        """Convert bounding boxe coordinates to a Geodetic Parameter Dataset (EPSG) in
+        """Convert bounding box coordinates to a Geodetic Parameter Dataset (EPSG) in
         meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
         North).
 
@@ -568,7 +568,7 @@ class EarthSpy:
         elif not self.resolution and self.download_mode == "SM":
             self.resolution = self.raw_data_collection_resolution
 
-        # resolution cant be higher than max resolution in D download mode
+        # resolution can't be higher than max resolution in D download mode
         if self.download_mode == "D" and self.resolution < max_resolution:
             self.resolution = max_resolution
             if self.verbose:
@@ -618,7 +618,8 @@ class EarthSpy:
         boxes_pixels_x = (dx / trial_split_boxes) / self.resolution
         boxes_pixels_y = (dy / trial_split_boxes) / self.resolution
 
-        # get minimum number of split boxes needed to stay below Sentinel Hub max dimensions
+        # get minimum number of split boxes needed to stay below Sentinel Hub
+        # max dimensions
         min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
         min_nb_boxes_y = int(trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]])
 
@@ -681,7 +682,7 @@ class EarthSpy:
         """
 
         # store split boxes ids in dict
-        self.split_boxes_ids = {i: sb for i, sb in enumerate(self.split_boxes)}
+        self.split_boxes_ids = dict(zip(range(len(self.split_boxes)), self.split_boxes))
 
         return self.split_boxes_ids
 
@@ -1071,7 +1072,7 @@ class EarthSpy:
                         "transform": output_transform,
                     }
                 )
-                id_dict = {k:self.metadata[date][0][k] for k in ["id"]}
+                id_dict = {k: self.metadata[date][0][k] for k in ["id"]}
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)

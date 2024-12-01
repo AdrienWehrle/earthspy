@@ -9,7 +9,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.10", "3.11", "3.12"]
-        
+
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
@@ -18,23 +18,23 @@ jobs:
           environment-file: environment.yml
           use-mamba: true
           auto-activate-base: true
-          
+
       - shell: bash -l {0}
         run: |
           conda info
           conda list
-          
+
       - name: Install earthspy
         shell: bash -l {0}
         run: |
             pip install -e .
-            
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
-          fetch-depth: 0 
-          
+          fetch-depth: 0
+
       - name: Lint code base
         uses: github/super-linter/slim@v4.9.0
         env:
@@ -64,11 +64,11 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -r dev-requirements.txt
-            
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         continue-on-error: true
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}          
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --file=dev-requirements.txt --package-manager=pip --severity-threshold=high --skip-unresolved=true
