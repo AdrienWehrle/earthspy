@@ -26,6 +26,7 @@ As `earthspy` is built on top of the [Sentinel Hub services](https://www.sentine
 - [Usage](#usage)
 - [Operational Near Real-Time (NRT) deployment](#operational-near-real-time-nrt-deployment)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 
 # Installation
 
