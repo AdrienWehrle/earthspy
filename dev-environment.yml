@@ -1,6 +1,7 @@
 name: earthspy-dev
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - python>=3.9
   - numpy
@@ -16,7 +17,7 @@ dependencies:
   - sphinx
   - sphinx_rtd_theme
   - pylint
-  - sphinxcontrib_programoutput
-  - sphinx_autodoc_typehints
+  - sphinxcontrib-programoutput
+  - sphinx-autodoc-typehints
   - pre-commit
   - sphinx-gallery
