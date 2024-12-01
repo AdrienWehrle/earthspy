@@ -1,7 +1,7 @@
 *** Introduction
 
 First off, thank you for considering contributing to =earthspy=! 😊
-    
+
 Following the guidelines presented here helps to communicate that you
 respect the efforts the developers managing and developing this open
 source project have put to foster community development. In return,
@@ -128,4 +128,3 @@ The license (see =LICENSE=) applies to all contributions.
 
 Part of this document is based on [[https://github.com/nayafia][nayafia]]'s [[https://github.com/nayafia/contributing-template/blob/master/CONTRIBUTING-template.md][CONTRIBUTING]] template and
 [[https://github.com/GlacioHack/geoutils/blob/main/CONTRIBUTING.md][geoutils CONTRIBUTING]].
-    

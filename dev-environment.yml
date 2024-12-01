@@ -20,4 +20,3 @@ dependencies:
   - sphinx_autodoc_typehints
   - pre-commit
   - sphinx-gallery
-
