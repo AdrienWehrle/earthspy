@@ -1,16 +1,16 @@
 *** Introduction
 
-First off, thank you for considering contributing to =earthspy=!😊
+First off, thank you for considering contributing to =earthspy=! 😊
     
 Following the guidelines presented here helps to communicate that you
 respect the efforts the developers managing and developing this open
 source project have put to foster community development. In return,
 they should reciprocate that respect in addressing your issue,
-assessing changes, and helping you finalize your pull requests.🌻
+assessing changes, and helping you finalize your pull requests. 🌻
 
 Any kind of contribution is more than welcome. Improving
 documentation, bug triaging, implementing new features or writing
-tutorials are all examples of helpful contributions.🚀
+tutorials are all examples of helpful contributions. 🚀
 
 *** Making a contribution
 
@@ -84,7 +84,7 @@ pre-commit run --all-files
 
 In your PR, make sure to note if all =pre-commit= checks passed or
 not. Other developers will gladly help you getting rid of remaining
-red signs in your terminal if you feel stuck!🌿
+red signs in your terminal if you feel stuck! 🌿
 
 Optionally, =pre-commit= can also be installed as a git hook to
 automatically ensure checks have to pass before committing.
