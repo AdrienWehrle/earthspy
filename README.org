@@ -8,13 +8,13 @@
 
 =earthspy= is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications.
 
-Some useful capabilities: 
+Some useful capabilities:
   - Data download in multiprocessing
-  - Data download at optimized resolutions with the Direct (D) download mode 
+  - Data download at optimized resolutions with the Direct (D) download mode
   - Data download at native resolutions with the Split and Merge (SM) downlodad mode
   - Data storage with efficient structure and file naming
 
-As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage. 
+As =earthspy= is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage.
 
 * Table of Contents                               :toc_2:noexport:
 - [[#earthspy-%EF%B8%8F-earth_africa-earth_americas-earth_asia][earthspy]]
@@ -66,7 +66,12 @@ job = es.EarthSpy("/path/to/auth.txt")
 
 # as simple as it gets
 job.set_query_parameters(
-    bounding_box=[-51.13, 69.204, -51.06, 69.225], # format from doc: [min_x, min_y, max_x, max_y]
+    bounding_box=[
+        -51.13,
+        69.204,
+        -51.06,
+        69.225,
+    ],  # format from doc: [min_x, min_y, max_x, max_y]
     time_interval=["2019-08-03", "2019-08-10"],
     evaluation_script="https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/true_color/script.js",
     data_collection="SENTINEL2_L2A",
@@ -74,6 +79,7 @@ job.set_query_parameters(
 
 # and off it goes!
 job.send_sentinelhub_requests()
+
 #+end_src
 
 Homemade custom evalscripts can also be passed without effort to e.g. compute high-level indices (NDVI, NDSI...).
@@ -141,7 +147,7 @@ job.send_sentinelhub_requests()
 #+end_src
 
 
-* Operational Near Real-Time (NRT) deployment 
+* Operational Near Real-Time (NRT) deployment
 
 =earthspy= can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [[https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py][earthspy_NRT.py]] and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
 #+BEGIN_SRC bash :results verbatim
