@@ -60,10 +60,10 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # - name: Install dev requirements
-      #   shell: bash -l {0}
-      #   run: |
-      #     pip install -r dev-requirements.txt
+      - name: Install dev requirements
+        shell: bash -l {0}
+        run: |
+          pip install -r dev-requirements.txt
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
@@ -71,4 +71,4 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --file=dev-requirements.yml --package-manager=pip --severity-threshold=high --skip-unresolved=true
+          args: --file=requirements-dev.txt --package-manager=pip --severity-threshold=high --skip-unresolved=true
