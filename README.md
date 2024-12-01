@@ -1,10 +1,11 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Continuous integration](https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg)](https://github.com/AdrienWehrle/earthspy/actions)
-[[https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml][https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml/badge.svg]]
-[[https://pre-commit.com/][https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit.svg]]
-[[https://codecov.io/gh/AdrienWehrle/earthspy][https://codecov.io/gh/AdrienWehrle/earthspy/branch/main/graph/badge.svg]]
-[[https://github.com/psf/black][https://img.shields.io/badge/code%20style-black-000000.svg]]
-[[https://pycqa.github.io/isort/][https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336.svg]]
+[![CodeQL](https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml/badge.svg)](https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml)
+[![readthedocs](https://readthedocs.org/projects/earthspy/badge/?version=latest)]()
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
+[![codecov](https://codecov.io/gh/AdrienWehrle/earthspy/branch/main/graph/badge.svg)](https://codecov.io/gh/AdrienWehrle/earthspy)
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
 
 # earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia:
