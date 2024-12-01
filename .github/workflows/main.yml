@@ -63,7 +63,7 @@ jobs:
       - name: Install dev requirements
         shell: bash -l {0}
         run: |
-          pip install -r dev-requirements.txt
+          pip install -r requirements-dev.txt
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
