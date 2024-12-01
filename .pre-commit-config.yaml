@@ -44,6 +44,7 @@ repos:
           hooks:
                 - id: flake8
                   args: [
+                          '--max-line-length', '122', 
                           '--extend-ignore', 'E203,B028', # flake8
                                                           # disagrees
                                                           # with
