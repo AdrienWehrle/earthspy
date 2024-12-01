@@ -1,5 +1,5 @@
-https://img.shields.io/badge/License-GPLv3-blue.svg]]
-[[https://github.com/AdrienWehrle/earthspy/actions][file:https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg]]
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Continuous integration](https://github.com/AdrienWehrle/earthspy/workflows/CI/badge.svg)](https://github.com/AdrienWehrle/earthspy/actions)
 [[https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml][https://github.com/AdrienWehrle/earthspy/actions/workflows/codeql.yml/badge.svg]]
 [[https://pre-commit.com/][https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit.svg]]
 [[https://codecov.io/gh/AdrienWehrle/earthspy][https://codecov.io/gh/AdrienWehrle/earthspy/branch/main/graph/badge.svg]]
@@ -61,7 +61,6 @@ At present `earthspy` can be run within a couple of lines of Python code that ex
 Below is presented a simple application of `earthspy` for the download of Sentinel-2 data download around Ilulissat, Greenland for a few days in August 2019 using a True Color custom script available on Sentinel Hub's [custom script online repository](https://custom-scripts.sentinel-hub.com). All other available data collections can be found [here](https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html).
 
 ```python
-
 import earthspy.earthspy as es
 
 # auth.txt should contain username and password (first and second row)
@@ -88,6 +87,7 @@ Homemade custom evalscripts can also be passed without effort to e.g. compute hi
 Below is presented an example with the default evaluation script used above (to keep it short):
 
 ```python
+import earthspy.earthspy as es
 
 # Sentinel-2 default True Color script
 example_evalscript = """
@@ -129,7 +129,6 @@ In this way, the name of the region can be directly passed to the `bounding_box`
 query parameter. See below for a simple example with the [ilulissat.geojson](https://github.com/AdrienWehrle/earthspy/tree/main/data/ilulissat.geojson) example file.
 
 ```python
-
 import earthspy.earthspy as es
 
 # auth.txt should contain username and password (first and second row)
@@ -152,8 +151,8 @@ job.send_sentinelhub_requests()
 
 `earthspy` can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [earthspy_NRT.py](https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py) and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
 ```bash
-    # m h  dom mon dow   command
-    00 12 * * * /bin/bash -c "/path/to/earthspy_NRT.py" > /path/to/log/log_earthspy_NRT.txt
+# m h  dom mon dow   command
+00 12 * * * /bin/bash -c "/path/to/earthspy_NRT.py" > /path/to/log/log_earthspy_NRT.txt
 ```
 
 # Documentation
