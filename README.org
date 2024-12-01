@@ -62,7 +62,7 @@ Below is presented a simple application of =earthspy= for the download of Sentin
 import earthspy.earthspy as es
 
 # auth.txt should contain username and password (first and second row)
-job = es.EarthSpy("/home/adrien/UZH/auth_coebeli.txt")
+job = es.EarthSpy("/path/to/auth.txt")
 
 # as simple as it gets
 job.set_query_parameters(
