@@ -63,7 +63,7 @@ jobs:
       - name: Install dev requirements
         shell: bash -l {0}
         run: |
-          pip install -r dev-requirements.txt
+          pip install -r requirements-dev.txt
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
@@ -71,4 +71,4 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --file=dev-requirements.txt --package-manager=pip --severity-threshold=high --skip-unresolved=true
+          args: --file=requirements-dev.txt --package-manager=pip --severity-threshold=high --skip-unresolved=true

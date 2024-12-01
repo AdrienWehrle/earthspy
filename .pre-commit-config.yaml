@@ -96,3 +96,17 @@ repos:
                 # Enforce the use of type annotations instead of
                 # docstring type comments
                 - id: python-use-type-annotations
+
+
+        - repo: local
+          hooks:
+            # Generate pip's dev-requirements.txt from conda's
+            # dev-environment.yml to run snyk (snyk doesn't currently
+            # support conda)
+            - id: pip-to-conda
+              name: Generate pip dependency from conda
+              language: python
+              entry: .github/scripts/generate_pip_deps_from_conda.py
+              files: ^(dev-environment.yml|requirements-dev.txt)$
+              pass_filenames: false
+              additional_dependencies: [tomli, pyyaml]
