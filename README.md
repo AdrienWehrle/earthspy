@@ -20,7 +20,7 @@ Some useful capabilities:
 
 As `earthspy` is built on top of the [Sentinel Hub services](https://www.sentinel-hub.com/), it includes e.g. the data pre-processing through [custom scripts](https://docs.sentinel-hub.com/api/latest/evalscript/) allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage.
 
-#  Table of Contents                               :toc_2:noexport:
+#  Table of Contents
 - [earthspy](#earthspy-%EF%B8%8F-earth_africa-earth_americas-earth_asia)
 - [Installation](#installation)
 - [Usage](#usage)
