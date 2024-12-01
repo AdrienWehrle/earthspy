@@ -7,9 +7,9 @@ https://img.shields.io/badge/License-GPLv3-blue.svg]]
 [[https://pycqa.github.io/isort/][https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336.svg]]
 
 
-# earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia: :moon:
+# earthspy 🛰️ :earth_africa: :earth_americas: :earth_asia:
 
-`earthspy` is a wrapper around methods for the download of satellite data offered in the [[https://github.com/sentinel-hub/sentinelhub-py][sentinelhub Python package]]. This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications.
+`earthspy` is a wrapper around methods for the download of satellite data offered in the [sentinelhub-py Python package](https://github.com/sentinel-hub/sentinelhub-py). This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications.
 
 Some useful capabilities:
   - Data download in multiprocessing
@@ -17,7 +17,7 @@ Some useful capabilities:
   - Data download at native resolutions with the Split and Merge (SM) downlodad mode
   - Data storage with efficient structure and file naming
 
-As `earthspy` is built on top of the [[https://www.sentinel-hub.com/][Sentinel Hub services]], it includes e.g. the data pre-processing through [[https://docs.sentinel-hub.com/api/latest/evalscript/][custom scripts]] allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage.
+As `earthspy` is built on top of the [Sentinel Hub services](https://www.sentinel-hub.com/), it includes e.g. the data pre-processing through [custom scripts](https://docs.sentinel-hub.com/api/latest/evalscript/) allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage.
 
 * Table of Contents                               :toc_2:noexport:
 - [[#earthspy-%EF%B8%8F-earth_africa-earth_americas-earth_asia][earthspy]]
@@ -28,9 +28,9 @@ As `earthspy` is built on top of the [[https://www.sentinel-hub.com/][Sentinel H
 
 # Installation
 
-Currently, it is recommended to install =earthspy= via [[https://github.com/][Github]], with [[https://docs.conda.io/en/latest/][conda]] and [[https://pip.pypa.io/en/stable/][pip]]:
+It is recommended to install `earthspy` via [Github](https://github.com/), with [conda](https://docs.conda.io/en/latest/) and [pip](https://pip.pypa.io/en/stable/):
 
-```python
+```bash
 
 # clone repository
 git clone git@github.com:AdrienWehrle/earthspy.git
@@ -49,16 +49,16 @@ pip install -e .
 ```
 
 - Using `pip` together with `conda` is usually a bad idea, but here `conda` installs all the dependencies and `pip` only sets up the associated paths, that's all! :+1:
-- Installation can be sped up using the fast cross-platform package manager [[https://mamba.readthedocs.io/en/latest/][mamba]] (reimplementation of the conda package manager in C++), simply use `mamba` instead of `conda` in the instructions above!
+- Installation can be sped up using the fast cross-platform package manager [mamba](https://mamba.readthedocs.io/en/latest/) (reimplementation of the conda package manager in C++), simply use `mamba` instead of `conda` in the instructions above!
 
 
 # Usage
-At present `earthspy` can be run by users within a couple of lines of Python code that execute three main tasks:
+At present `earthspy` can be run within a couple of lines of Python code that execute three main tasks:
 - set up a Sentinel Hub connection (for a given Sentinel Hub account)
 - set query parameters including Sentinel Hub API variables and `earthspy` additional ones (mainly for download efficiency)
 - send request
 
-Below is presented a simple application of `earthspy` for the download of Sentinel-2 data download around Ilulissat, Greenland for few days in August 2019 using a True Color custom script available on Sentinel Hub's [[https://custom-scripts.sentinel-hub.com][custom script online repository]]. All other available data collections can be found [[https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html][here]].
+Below is presented a simple application of `earthspy` for the download of Sentinel-2 data download around Ilulissat, Greenland for a few days in August 2019 using a True Color custom script available on Sentinel Hub's [custom script online repository](https://custom-scripts.sentinel-hub.com). All other available data collections can be found [here](https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html).
 
 ```python
 
@@ -123,11 +123,10 @@ job.set_query_parameters(
 job.send_sentinelhub_requests()
 ```
 
-[[https://geojson.org/][GEOJSON]] files containing a polygon corresponding to a given region of interest
-and its associated name can also be created at [[https://geojson.io/#map=2/20.0/0.0][geojson.io]] and stored in [[https://github.com/AdrienWehrle/earthspy/tree/29-add-roi-json-files/data][./data]].
+[GEOJSON](https://geojson.org/) files containing a polygon corresponding to a given region of interest
+and its associated name can also be created at [geojson.io](https://geojson.io/#map=2/20.0/0.0) and stored in [`./data`](https://github.com/AdrienWehrle/earthspy/tree/main/data).
 In this way, the name of the region can be directly passed to the `bounding_box`
-query parameter. See below for a simple example with the [[https://github.com/AdrienWehrle/earthspy/blob/29-add-roi-json-files/data/ilulissat.geojson][ilulissat.geojson]]
-example file.
+query parameter. See below for a simple example with the [ilulissat.geojson](https://github.com/AdrienWehrle/earthspy/tree/main/data/ilulissat.geojson) example file.
 
 ```python
 
@@ -151,7 +150,7 @@ job.send_sentinelhub_requests()
 
 # Operational Near Real-Time (NRT) deployment
 
-=earthspy= can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [[https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py][earthspy_NRT.py]] and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
+`earthspy` can be easily deployed for NRT monitoring. The setup is as simple as wrapping the query parameters in a short python script such as [earthspy_NRT.py](https://github.com/AdrienWehrle/earthspy/blob/main/earthspy/operational/earthspy_NRT.py) and including it in a cron job. See an example below where Sentinel-2 images of Ilulissat, Greenland acquired over the past three days are downloaded everyday at noon.
 ```bash
     # m h  dom mon dow   command
     00 12 * * * /bin/bash -c "/path/to/earthspy_NRT.py" > /path/to/log/log_earthspy_NRT.txt
