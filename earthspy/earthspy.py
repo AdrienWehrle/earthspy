@@ -216,7 +216,7 @@ class EarthSpy:
         ]:
            
             self.raster_compression = raster_compression
-        elif raster_compression == None:
+        elif raster_compression is None:
             self.raster_compression = None
         else:
             raise KeyError("Compression mode not found")
