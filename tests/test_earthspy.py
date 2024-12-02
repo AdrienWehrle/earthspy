@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import requests
 import sentinelhub as shb
+import json
+import glob
 
 import earthspy.earthspy as es
 
@@ -331,6 +333,25 @@ class TestEarthspy:
         )
         # # check that a Sentinel Hub request was created
         assert isinstance(sr2, shb.SentinelHubRequest)
+
+    def test_geojson(self) -> None:
+        """Test geojson files"""
+
+        folder_path = glob.glob("earthspy/data/*", recursive=True)
+        for file in folder_path:
+            with open(file, "r+") as files_geo:
+                data = json.load(files_geo)
+                array_coord = np.array(data["features"][0]["geometry"]
+                                           ['coordinates'][0])
+                
+                # check if the figure is a Polygon
+                assert data["features"][0]["geometry"]['type'] == "Polygon"
+                # check if the coordinates are in the right format
+                assert array_coord.shape == (5, 2)
+                # check if the coordinates are between -90 and 90
+                assert ((array_coord >= -90) & (array_coord <= 90)).all()
+                # check if the first and the last coordinates are the same                
+                assert array_coord[0, 0] == array_coord[-1, 0]
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
