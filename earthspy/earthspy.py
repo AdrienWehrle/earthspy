@@ -84,6 +84,7 @@ class EarthSpy:
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
+        raster_compression: str = None,
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -144,6 +145,11 @@ class EarthSpy:
         :param verbose: Whether to print processing status or not, defaults
           to True.
         :type verbose: bool, optional
+        
+        
+        :param raster_compression: Raster compression to apply following methods
+          available in rasterio, defaults to None.
+        :type raster_compression: Union[None, str], optional
         """
 
         # set processing attributes
@@ -170,6 +176,10 @@ class EarthSpy:
 
         # set and correct resolution
         self.set_correct_resolution()
+        
+        
+        # set compress mode
+        self.get_raster_compression(raster_compression)
 
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
@@ -186,6 +196,31 @@ class EarthSpy:
             self.set_split_boxes_ids()
 
         return None
+
+    def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
+        """Verify valid keyword for raster compression
+        
+        
+        :return: Compression mode
+        """
+        
+        if raster_compression in [
+            'DEFLATE',
+            'LZW',
+            'PACKBITS',
+            'JPEG',
+            'WEBP',
+            'LZMA',
+            'ZSTD'
+        ]:
+           
+            self.raster_compression = raster_compression
+        elif raster_compression is None:
+            self.raster_compression = None
+        else:
+            raise KeyError("Compression mode not found")
+        
+        return self.raster_compression
 
     def get_data_collection(self) -> shb.DataCollection:
         """Get Sentinel Hub DataCollection object from data collection name.
@@ -1070,6 +1105,7 @@ class EarthSpy:
                         "height": mosaic.shape[1],
                         "width": mosaic.shape[2],
                         "transform": output_transform,
+                        "compress": self.raster_compression,
                     }
                 )
                 id_dict = {k: self.metadata[date][0][k] for k in ["id"]}
