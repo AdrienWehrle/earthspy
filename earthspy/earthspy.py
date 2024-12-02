@@ -85,7 +85,7 @@ class EarthSpy:
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
-        raster_compression: str = None
+        raster_compression: str = None,
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -147,6 +147,7 @@ class EarthSpy:
           to True.
         :type verbose: bool, optional
         
+        
         :param raster_compression: Raster compression to apply following methods
           available in rasterio, defaults to None.
         :type raster_compression: Union[None, str], optional
@@ -177,6 +178,7 @@ class EarthSpy:
         # set and correct resolution
         self.set_correct_resolution()
         
+        
         # set compress mode
         self.get_raster_compression(raster_compression)
 
@@ -199,16 +201,25 @@ class EarthSpy:
     def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
         """Verify valid keyword for raster compression
         
+        
         :return: Compression mode
         """
         
-        if raster_compression in ['DEFLATE','LZW','PACKBITS','JPEG',
-                                  'WEBP','LZMA','ZSTD']:
-           self.raster_compression = raster_compression
+        if raster_compression in [
+            'DEFLATE',
+            'LZW',
+            'PACKBITS',
+            'JPEG',
+            'WEBP',
+            'LZMA',
+            'ZSTD'
+        ]:
+           
+            self.raster_compression = raster_compression
         elif raster_compression == None:
             self.raster_compression = None
         else:
-          raise KeyError("Compression mode not found")
+            raise KeyError("Compression mode not found")
         
         return self.raster_compression
 
@@ -1083,7 +1094,7 @@ class EarthSpy:
                         "height": mosaic.shape[1],
                         "width": mosaic.shape[2],
                         "transform": output_transform,
-                        "compress": self.raster_compression
+                        "compress": self.raster_compression,
                     }
                 )
 
