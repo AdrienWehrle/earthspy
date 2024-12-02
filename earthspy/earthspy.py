@@ -202,7 +202,8 @@ class EarthSpy:
         :return: Compression mode
         """
         
-        if raster_compression in ['DEFLATE','LZW','PACKBITS','JPEG', 'WEBP','LZMA','ZSTD']:
+        if raster_compression in ['DEFLATE','LZW','PACKBITS','JPEG',
+                                  'WEBP','LZMA','ZSTD']:
            self.raster_compression = raster_compression
         elif raster_compression == None:
             self.raster_compression = None
