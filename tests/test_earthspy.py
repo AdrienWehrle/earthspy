@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
 """
 
-import earthspy.earthspy as es
-import numpy as np
+import glob
+import json
 import os
+
+import numpy as np
 import pandas as pd
 import requests
 import sentinelhub as shb
-import json
-import glob
+
+import earthspy.earthspy as es
+
 
 class TestEarthspy:
     # create local variables from environment secrets for convenience
@@ -338,16 +340,17 @@ class TestEarthspy:
         for file in folder_path:
             with open(file, "r+") as files_geo:
                 data = json.load(files_geo)
-                array_coord = np.array(data["features"][0]["geometry"]
-                                           ['coordinates'][0])
-                
+                array_coord = np.array(
+                    data["features"][0]["geometry"]["coordinates"][0]
+                )
+
                 # check if the figure is a Polygon
-                assert data["features"][0]["geometry"]['type'] == "Polygon"
+                assert data["features"][0]["geometry"]["type"] == "Polygon"
                 # check if the coordinates are in the right format
                 assert array_coord.shape == (5, 2)
                 # check if the coordinates are between -90 and 90
                 assert ((array_coord >= -90) & (array_coord <= 90)).all()
-                # check if the first and the last coordinates are the same                
+                # check if the first and the last coordinates are the same
                 assert array_coord[0, 0] == array_coord[-1, 0]
 
     def test_rename_output_files(self) -> None:
