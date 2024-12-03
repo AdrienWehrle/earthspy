@@ -338,7 +338,10 @@ class TestEarthspy:
         """Test fields of GEOJSON files"""
 
         # list all geojson files available in earthspy
-        geojson_files = glob.glob("earthspy/data/*")
+        geojson_files = glob.glob("./earthspy/data/*")
+
+        # check that files were found
+        assert len(geojson_files) > 0
 
         for file in geojson_files:
 
