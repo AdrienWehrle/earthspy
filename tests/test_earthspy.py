@@ -335,24 +335,32 @@ class TestEarthspy:
         assert isinstance(sr2, shb.SentinelHubRequest)
 
     def test_geojson(self) -> None:
-        """Test geojson files"""
+        """Test fields of GEOJSON files"""
 
-        folder_path = glob.glob("earthspy/data/*", recursive=True)
-        for file in folder_path:
-            with open(file, "r+") as files_geo:
-                data = json.load(files_geo)
-                array_coord = np.array(
+        # list all geojson files available in earthspy
+        geojson_files = glob.glob("earthspy/data/*")
+        
+        for file in geojson_files:
+            
+            with open(file, "r+") as f:
+                data = json.load(f)
+
+                # extract coordinates of geometry nodes
+                geometry_coordinates = np.array(
                     data["features"][0]["geometry"]["coordinates"][0]
                 )
 
-                # check if the figure is a Polygon
+                # check if feature is a polygon
                 assert data["features"][0]["geometry"]["type"] == "Polygon"
-                # check if the coordinates are in the right format
-                assert array_coord.shape == (5, 2)
-                # check if the coordinates are between -90 and 90
-                assert ((array_coord >= -90) & (array_coord <= 90)).all()
-                # check if the first and the last coordinates are the same
-                assert array_coord[0, 0] == array_coord[-1, 0]
+                
+                # check if coordinates match a 4-point square
+                assert geometry_coordinates.shape == (5, 2)
+                
+                # check if the coordinates are valid longitude/latitude coordinates
+                assert ((geometry_coordinates >= -90) & (geometry_coordinates <= 90)).all()
+                
+                # check if first coordinate is repeated on the last element
+                assert geometry_coordinates[0, 0] == geometry_coordinates[-1, 0]
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
