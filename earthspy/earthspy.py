@@ -197,10 +197,11 @@ class EarthSpy:
         return None
 
     def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
-        """Verify valid keyword for raster compression
-
-
-        :return: Compression mode
+        """Get raster compression based on rasterio's
+        available methods
+        
+        :return: Raster compression method
+        :rtype: Union[None, str]
         """
 
         if raster_compression in [
@@ -328,7 +329,6 @@ class EarthSpy:
 
         :return: Data collection resolution.
         :rtype: int
-
         """
 
         # set default satellite resolution
