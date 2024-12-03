@@ -1,29 +1,29 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
 
 """
 
-from collections import Counter
-from datetime import datetime, timedelta
 import glob
 import json
-from multiprocessing import cpu_count
-import numpy as np
-import objectpath
 import os
-import pandas as pd
-from pathlib import Path
-import rasterio
-from rasterio.merge import merge
-import requests
-import sentinelhub as shb
 import shutil
 import tarfile
 import time
-from typing import Union, Tuple
+from collections import Counter
+from datetime import datetime, timedelta
+from multiprocessing import cpu_count
+from pathlib import Path
+from typing import Tuple, Union
+
+import numpy as np
+import objectpath
+import pandas as pd
+import rasterio
+import requests
+import sentinelhub as shb
 import validators
+from rasterio.merge import merge
 
 
 class EarthSpy:
@@ -34,12 +34,12 @@ class EarthSpy:
     def __init__(self, CLIENT_credentials_file: str) -> None:
         """
         :param CLIENT_credentials_file: full path to file containing credentials
-          with User's OAuth client ID (1st row) secrect (2nd row).
+          with User's OAuth client ID (1st row) secret (2nd row).
         :type CLIENT_credentials_file: str
         """
 
         # read credentials stored in text file
-        with open(CLIENT_credentials_file, "r") as file:
+        with open(CLIENT_credentials_file) as file:
             credentials = file.read().splitlines()
 
         # extract credentials from lines
@@ -146,8 +146,8 @@ class EarthSpy:
         :param verbose: Whether to print processing status or not, defaults
           to True.
         :type verbose: bool, optional
-        
-        
+
+
         :param raster_compression: Raster compression to apply following methods
           available in rasterio, defaults to None.
         :type raster_compression: Union[None, str], optional
@@ -177,8 +177,7 @@ class EarthSpy:
 
         # set and correct resolution
         self.set_correct_resolution()
-        
-        
+
         # set compress mode
         self.get_raster_compression(raster_compression)
 
@@ -200,27 +199,27 @@ class EarthSpy:
 
     def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
         """Verify valid keyword for raster compression
-        
-        
+
+
         :return: Compression mode
         """
-        
+
         if raster_compression in [
-            'DEFLATE',
-            'LZW',
-            'PACKBITS',
-            'JPEG',
-            'WEBP',
-            'LZMA',
-            'ZSTD'
+            "DEFLATE",
+            "LZW",
+            "PACKBITS",
+            "JPEG",
+            "WEBP",
+            "LZMA",
+            "ZSTD",
         ]:
-           
+
             self.raster_compression = raster_compression
         elif raster_compression == None:
             self.raster_compression = None
         else:
             raise KeyError("Compression mode not found")
-        
+
         return self.raster_compression
 
     def get_data_collection(self) -> shb.DataCollection:
@@ -260,7 +259,7 @@ class EarthSpy:
         ]
 
         # some data sets require a difference service_url, test search_iterator
-        # and update service_url if dowload failed
+        # and update service_url if download failed
         try:
             # store metadata of available scenes
             self.metadata = [list(iterator) for iterator in search_iterator]
@@ -428,12 +427,12 @@ class EarthSpy:
         :rtype: sentinelhub.geometry.BBox
         """
 
-        # if a list, set Sentinel Hub BBox wit bounding_box
+        # if a list, set Sentinel Hub BBox with bounding_box
         if isinstance(bounding_box, list):
             # create Sentinel Hub BBox
             self.bounding_box = shb.BBox(bbox=bounding_box, crs=shb.CRS.WGS84)
 
-            # cant guess name, so set to None
+            # can't guess name, so set to None
             self.bounding_box_name = None
 
         # if a string, extract bounding box from corresponding GEOJSON file
@@ -497,7 +496,7 @@ class EarthSpy:
             if self.algorithm:
                 store_folder += f"{os.sep}{self.algorithm}"
 
-        # create subfolder if doesnt exist
+        # create subfolder if doesn't exist
         if not os.path.exists(store_folder):
             os.makedirs(store_folder)
 
@@ -507,7 +506,7 @@ class EarthSpy:
         return self.store_folder
 
     def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox, list]:
-        """Convert bounding boxe coordinates to a Geodetic Parameter Dataset (EPSG) in
+        """Convert bounding boxes coordinates to a Geodetic Parameter Dataset (EPSG) in
         meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
         North).
 
@@ -593,7 +592,7 @@ class EarthSpy:
         elif not self.resolution and self.download_mode == "SM":
             self.resolution = self.raw_data_collection_resolution
 
-        # resolution cant be higher than max resolution in D download mode
+        # resolution can't be higher than max resolution in D download mode
         if self.download_mode == "D" and self.resolution < max_resolution:
             self.resolution = max_resolution
             if self.verbose:
