@@ -1106,23 +1106,19 @@ class EarthSpy:
                         "transform": output_transform,
                     }
                 )
-                
+
                 # update dictionary if compression set
                 if self.raster_compression is not None:
-                    output_meta.update(
-                        {
-                            "compress":self.raster_compression
-                        }
-                )
+                    output_meta.update({"compress": self.raster_compression})
 
                 # extract scene id
                 id_dict = {k: self.metadata[date][0][k] for k in ["id"]}
-                
+
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
                     dst.update_tags(**id_dict)
-                    
+
                 # save file name of merged raster
                 self.output_filenames_renamed.append(date_output_filename)
 
