@@ -339,9 +339,9 @@ class TestEarthspy:
 
         # list all geojson files available in earthspy
         geojson_files = glob.glob("earthspy/data/*")
-        
+
         for file in geojson_files:
-            
+
             with open(file, "r+") as f:
                 data = json.load(f)
 
@@ -352,13 +352,15 @@ class TestEarthspy:
 
                 # check if feature is a polygon
                 assert data["features"][0]["geometry"]["type"] == "Polygon"
-                
+
                 # check if coordinates match a 4-point square
                 assert geometry_coordinates.shape == (5, 2)
-                
+
                 # check if the coordinates are valid longitude/latitude coordinates
-                assert ((geometry_coordinates >= -90) & (geometry_coordinates <= 90)).all()
-                
+                assert (
+                    (geometry_coordinates >= -90) & (geometry_coordinates <= 90)
+                ).all()
+
                 # check if first coordinate is repeated on the last element
                 assert geometry_coordinates[0, 0] == geometry_coordinates[-1, 0]
 
