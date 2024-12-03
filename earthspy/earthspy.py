@@ -1093,10 +1093,16 @@ class EarthSpy:
                         "height": mosaic.shape[1],
                         "width": mosaic.shape[2],
                         "transform": output_transform,
-                        "compress": self.raster_compression,
                     }
                 )
-
+                
+                if self.raster_compression is not None:
+                    output_meta.update(
+                        {
+                            "compress":self.raster_compression
+                        }
+                )
+            
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
