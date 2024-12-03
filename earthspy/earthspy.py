@@ -27,8 +27,9 @@ from rasterio.merge import merge
 
 
 class EarthSpy:
-    """Monitor and study any place on Earth and in Near Real-Time (NRT) using the
-    SentinelHub services.
+    """Monitor and study any place on Earth and in Near Real-Time
+    (NRT) using the SentinelHub services.
+
     """
 
     def __init__(self, CLIENT_credentials_file: str) -> None:
@@ -48,8 +49,6 @@ class EarthSpy:
 
         # setup connection
         self.configure_connection()
-
-        return None
 
     def configure_connection(self) -> shb.SHConfig:
         """Build a shb configuration class for the connection to Sentinel Hub services.
@@ -262,7 +261,12 @@ class EarthSpy:
         # and update service_url if download failed
         try:
             # store metadata of available scenes
-            self.metadata = [list(iterator) for iterator in search_iterator]
+            self.metadata = {}
+            for iterator in search_iterator:
+                iterator_list = list(iterator)
+                if len(iterator_list) > 0:
+                    date = iterator_list[0]["properties"]["datetime"].split("T")[0]
+                    self.metadata[date] = iterator_list
 
         except shb.exceptions.DownloadFailedException:
             # set specific base URL of deployment
@@ -284,7 +288,12 @@ class EarthSpy:
             ]
 
             # store metadata of available scenes
-            self.metadata = [list(iterator) for iterator in search_iterator]
+            self.metadata = {}
+            for iterator in search_iterator:
+                iterator_list = list(iterator)
+                if len(iterator_list) > 0:
+                    date = iterator_list[0]["properties"]["datetime"].split("T")[0]
+                    self.metadata[date] = iterator_list
 
         # create date +-1 hour around acquisition time
         time_difference = timedelta(hours=1)
@@ -344,7 +353,7 @@ class EarthSpy:
         return self.raw_data_collection_resolution
 
     def set_number_of_cores(self, nb_cores) -> int:
-        """Set number of cores if not specificed by user.
+        """Set number of cores if not specified by user.
 
         :return: Number of cores to use in multithreading.
         :rtype: int
@@ -377,7 +386,8 @@ class EarthSpy:
         :rtype: pd.core.indexes.datetimes.DatetimeIndex
         """
 
-        # if an integer, create a datetimeIndex with the number of days from present date
+        # if an integer, create a datetimeIndex with the number of days
+        # from present date
         if isinstance(time_interval, int):
             # keep time_interval positive
             if time_interval < 0:
@@ -506,7 +516,7 @@ class EarthSpy:
         return self.store_folder
 
     def convert_bounding_box_coordinates(self) -> Tuple[shb.geometry.BBox, list]:
-        """Convert bounding boxes coordinates to a Geodetic Parameter Dataset (EPSG) in
+        """Convert bounding box coordinates to a Geodetic Parameter Dataset (EPSG) in
         meter unit, default to EPSG:3413 (NSIDC Sea Ice Polar Stereographic
         North).
 
@@ -642,7 +652,8 @@ class EarthSpy:
         boxes_pixels_x = (dx / trial_split_boxes) / self.resolution
         boxes_pixels_y = (dy / trial_split_boxes) / self.resolution
 
-        # get minimum number of split boxes needed to stay below Sentinel Hub max dimensions
+        # get minimum number of split boxes needed to stay below Sentinel Hub
+        # max dimensions
         min_nb_boxes_x = int(trial_split_boxes[np.where(boxes_pixels_x <= 2500)[0][0]])
         min_nb_boxes_y = int(trial_split_boxes[np.where(boxes_pixels_y <= 2500)[0][0]])
 
@@ -705,7 +716,7 @@ class EarthSpy:
         """
 
         # store split boxes ids in dict
-        self.split_boxes_ids = {i: sb for i, sb in enumerate(self.split_boxes)}
+        self.split_boxes_ids = dict(zip(range(len(self.split_boxes)), self.split_boxes))
 
         return self.split_boxes_ids
 
@@ -1096,11 +1107,11 @@ class EarthSpy:
                         "compress": self.raster_compression,
                     }
                 )
-
+                id_dict = {k: self.metadata[date][0][k] for k in ["id"]}
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
-
+                    dst.update_tags(**id_dict)
                 # save file name of merged raster
                 self.output_filenames_renamed.append(date_output_filename)
 

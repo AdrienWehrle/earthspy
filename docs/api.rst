@@ -9,7 +9,7 @@ API
    :recursive:
 
    earthspy
-   
+
 
 .. automodule earthspy
 
