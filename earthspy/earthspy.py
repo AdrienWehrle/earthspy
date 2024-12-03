@@ -197,8 +197,7 @@ class EarthSpy:
         return None
 
     def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
-        """Get raster compression based on rasterio's
-        available methods
+        """Get raster compression based on rasterio's available methods
         
         :return: Raster compression method
         :rtype: Union[None, str]
