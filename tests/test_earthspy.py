@@ -22,8 +22,11 @@ class TestEarthspy:
     SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
     SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
 
+    # path to credential file to be created
+    authfile = "auth.txt"
+
     # create file containing credentials for testing
-    with open("auth.txt", "w") as out:
+    with open(authfile, "w") as out:
         out.write(f"{SH_CLIENT_ID}\n{SH_CLIENT_SECRET}")
 
     # an example of custom script
@@ -62,7 +65,7 @@ class TestEarthspy:
     print(os.getcwd())
 
     # example of query with default parameters
-    t1 = es.EarthSpy("auth.txt")
+    t1 = es.EarthSpy(authfile)
     t1.set_query_parameters(
         bounding_box=test_bounding_box,
         time_interval=["2019-08-23"],
@@ -72,7 +75,7 @@ class TestEarthspy:
     )
 
     # example of query with direct area name
-    t2 = es.EarthSpy("auth.txt")
+    t2 = es.EarthSpy(authfile)
     t2.set_query_parameters(
         bounding_box=test_area_name,
         time_interval=["2019-08-23"],
@@ -82,7 +85,7 @@ class TestEarthspy:
     )
 
     # example of query with direct mode
-    t3 = es.EarthSpy("auth.txt")
+    t3 = es.EarthSpy(authfile)
     t3.set_query_parameters(
         bounding_box=test_bounding_box,
         time_interval=["2019-08-23"],
@@ -95,13 +98,13 @@ class TestEarthspy:
         """Test auth.txt parsing and connection configuration."""
 
         # check for credentials
-        assert self.t1.CLIENT_ID == os.environ["SH_CLIENT_ID"]
-        assert self.t1.CLIENT_SECRET == os.environ["SH_CLIENT_SECRET"]
+        assert self.t1.CLIENT_ID == SH_CLIENT_ID
+        assert self.t1.CLIENT_SECRET == SH_CLIENT_SECRET
 
         # check if connection was properly setup
         assert isinstance(self.t1.config, shb.config.SHConfig)
-        assert self.t1.config.sh_client_id == os.environ["SH_CLIENT_ID"]
-        assert self.t1.config.sh_client_secret == os.environ["SH_CLIENT_SECRET"]
+        assert self.t1.config.sh_client_id == SH_CLIENT_ID
+        assert self.t1.config.sh_client_secret == SH_CLIENT_SECRET
 
     def test_set_query_parameters(self) -> None:
         """Test direct attribute assignment."""
@@ -338,7 +341,7 @@ class TestEarthspy:
         """Test fields of GEOJSON files"""
 
         # list all geojson files available in earthspy
-        geojson_files = glob.glob("./earthspy/data/*")
+        geojson_files = glob.glob("./data/*")
 
         # check that files were found
         assert len(geojson_files) > 0
