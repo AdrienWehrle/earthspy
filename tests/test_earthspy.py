@@ -334,7 +334,7 @@ class TestEarthspy:
         # # check that a Sentinel Hub request was created
         assert isinstance(sr2, shb.SentinelHubRequest)
 
-    def test_geojson(self) -> None:
+    def test_geojson_files(self) -> None:
         """Test fields of GEOJSON files"""
 
         # list all geojson files available in earthspy
