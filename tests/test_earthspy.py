@@ -98,13 +98,13 @@ class TestEarthspy:
         """Test auth.txt parsing and connection configuration."""
 
         # check for credentials
-        assert self.t1.CLIENT_ID == SH_CLIENT_ID
-        assert self.t1.CLIENT_SECRET == SH_CLIENT_SECRET
+        assert self.t1.CLIENT_ID == self.SH_CLIENT_ID
+        assert self.t1.CLIENT_SECRET == self.SH_CLIENT_SECRET
 
         # check if connection was properly setup
         assert isinstance(self.t1.config, shb.config.SHConfig)
-        assert self.t1.config.sh_client_id == SH_CLIENT_ID
-        assert self.t1.config.sh_client_secret == SH_CLIENT_SECRET
+        assert self.t1.config.sh_client_id == self.SH_CLIENT_ID
+        assert self.t1.config.sh_client_secret == self.SH_CLIENT_SECRET
 
     def test_set_query_parameters(self) -> None:
         """Test direct attribute assignment."""
