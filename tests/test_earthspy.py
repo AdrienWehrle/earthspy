@@ -5,6 +5,8 @@
 
 """
 
+import glob
+import json
 import os
 
 import numpy as np
@@ -331,6 +333,37 @@ class TestEarthspy:
         )
         # # check that a Sentinel Hub request was created
         assert isinstance(sr2, shb.SentinelHubRequest)
+
+    def test_geojson_files(self) -> None:
+        """Test fields of GEOJSON files"""
+
+        # list all geojson files available in earthspy
+        geojson_files = glob.glob("./earthspy/data/*")
+
+        # check that files were found
+        assert len(geojson_files) > 0
+
+        for file in geojson_files:
+
+            with open(file, "r+") as f:
+                data = json.load(f)
+
+            # extract coordinates of geometry nodes
+            geometry_coordinates = np.array(
+                data["features"][0]["geometry"]["coordinates"][0]
+            )
+
+            # check if feature is a polygon
+            assert data["features"][0]["geometry"]["type"] == "Polygon"
+
+            # check if coordinates match a 4-point square
+            assert geometry_coordinates.shape == (5, 2)
+
+            # check if the coordinates are valid longitude/latitude coordinates
+            assert ((geometry_coordinates >= -90) & (geometry_coordinates <= 90)).all()
+
+            # check if first coordinate is repeated on the last element
+            assert geometry_coordinates[0, 0] == geometry_coordinates[-1, 0]
 
     def test_rename_output_files(self) -> None:
         """Test output renaming"""
