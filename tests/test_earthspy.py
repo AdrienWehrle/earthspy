@@ -358,3 +358,15 @@ class TestEarthspy:
         # assert all(isinstance(item, str) for item in self.t3.output_filenames_renamed)
         # # check that one output per split box was created
         # assert len(self.t3.outputs) == len(self.t3.split_boxes)
+        
+    def test_get_raster_compression(self) -> None:
+        """"""
+        #%% 
+        comp_def = self.t1.raster_compression
+        assert  comp_def == None 
+        
+        
+        
+        
+        
+        
