@@ -85,6 +85,7 @@ class EarthSpy:
         remove_splitboxes: bool = True,
         verbose: bool = True,
         raster_compression: str = None,
+        label: str = None,
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -150,6 +151,10 @@ class EarthSpy:
         :param raster_compression: Raster compression to apply following methods
           available in rasterio, defaults to None.
         :type raster_compression: Union[None, str], optional
+        
+        :param label: User input string put at the end of the file name,
+         defaults to None.
+        :type label: str, optionnal
         """
 
         # set processing attributes
@@ -186,6 +191,9 @@ class EarthSpy:
 
         # find available data within user time range
         self.get_available_data()
+        
+        # set user input string for file name
+        self.label = label
 
         # set download mode
         if download_mode == "D":
@@ -978,7 +986,7 @@ class EarthSpy:
             if self.download_mode == "D":
                 # build new file name
                 new_filename = (
-                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
+                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}_{self.label}.tif"
                 )
 
                 # If SICE, don't rename file but move to date folder
@@ -1008,7 +1016,7 @@ class EarthSpy:
                 # build new file name
                 new_filename = (
                     f"{self.store_folder}/"
-                    + f"{date}_{self.data_collection_str}_{split_box_id}.tif"
+                    + f"{date}_{self.data_collection_str}_{split_box_id}_{self.label}.tif"
                 )
 
                 # if SICE, add split box id in all names and move to date folder
