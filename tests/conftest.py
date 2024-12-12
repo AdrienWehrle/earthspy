@@ -29,7 +29,6 @@ if os.getenv("CI") is not None:
     def SH_CLIENT_ID() -> None:
         """Create local client id from environment variable"""
         # check if variable in environment variables
-        assert "SH_CLIENT_ID" in os.environ
         SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
         return SH_CLIENT_ID
 
@@ -37,7 +36,6 @@ if os.getenv("CI") is not None:
     def SH_CLIENT_SECRET() -> None:
         """Create local client secret from environment variable"""
         # check if variable in environment variables
-        assert "SH_CLIENT_SECRET" in os.environ
         SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
         return SH_CLIENT_SECRET
 
