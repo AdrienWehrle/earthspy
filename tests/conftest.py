@@ -13,47 +13,65 @@ import earthspy.earthspy as es
 
 
 def pytest_addoption(parser):
-    parser.addoption("--authfile", action="store", default="test")
+    """Add option to pass local path to authentication file"""
+    parser.addoption(
+        "--authfile",
+        action="store",
+        default="./auth.txt",
+        help="Full path to Sentinel Hub credential file containing ID and password",
+    )
 
 
+# if running in Github action
 if os.getenv("CI") is not None:
+
     # create local variables from environment secrets for convenience
     SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
     SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
 
     # path to credential file to be created
-    authfile = "auth.txt"
+    @pytest.fixture(scope="session")
+    def authfile(pytestconfig):
+        """Set credential file name"""
+        authfile = "auth.txt"
+        return authfile
 
     # create file containing credentials for testing
     with open(authfile, "w") as out:
         out.write(f"{SH_CLIENT_ID}\n{SH_CLIENT_SECRET}")
+
+# if running locally
 else:
 
     @pytest.fixture(scope="session")
     def authfile(pytestconfig):
+        """Get option from command line call"""
         return pytestconfig.getoption("authfile")
 
     @pytest.fixture(scope="session")
     def credentials(authfile):
-        # read credentials stored in text file
+        """Read credentials stored in text file"""
+
         with open(authfile) as file:
             credentials = file.read().splitlines()
         return credentials
 
     @pytest.fixture(scope="session")
     def SH_CLIENT_ID(credentials) -> None:
-        # extract credentials from lines
+        """Extract client id from line"""
         SH_CLIENT_ID = credentials[0]
         return SH_CLIENT_ID
 
     @pytest.fixture(scope="session")
     def SH_CLIENT_SECRET(credentials) -> None:
+        """Extract client secret from line"""
         SH_CLIENT_SECRET = credentials[1]
         return SH_CLIENT_SECRET
 
 
 @pytest.fixture(scope="session")
 def test_evalscript():
+    """Set a test evalscript for Sentinel-2"""
     test_evalscript = """
         //VERSION=3
         function setup(){
@@ -75,6 +93,7 @@ def test_evalscript():
 
 @pytest.fixture(scope="session")
 def test_url():
+    """Set a test evalscript pointing to Sentinel-2 True Color"""
     test_url = (
         "https://custom-scripts.sentinel-hub.com/custom-scripts/"
         + "sentinel-2/true_color/script.js"
@@ -84,28 +103,28 @@ def test_url():
 
 @pytest.fixture(scope="session")
 def test_collection():
-    # an example of data collection
+    """Set a test data collection"""
     test_collection = "SENTINEL2_L2A"
     return test_collection
 
 
 @pytest.fixture(scope="session")
 def test_bounding_box():
-    # an example of footprint area
+    """Set a test footprint area (bounding box)"""
     test_bounding_box = [-51.13, 69.204, -51.06, 69.225]
     return test_bounding_box
 
 
 @pytest.fixture(scope="session")
 def test_area_name():
-    # an example of area available as GEOJSON file
+    """Set a test area available as geojson file"""
     test_area_name = "Ilulissat"
     return test_area_name
 
 
 @pytest.fixture(scope="session")
 def t1(authfile, test_evalscript, test_collection, test_bounding_box):
-    # example of query with default parameters
+    """Set a test query with default parameters"""
     t1 = es.EarthSpy(authfile)
     t1.set_query_parameters(
         bounding_box=test_bounding_box,
@@ -119,7 +138,7 @@ def t1(authfile, test_evalscript, test_collection, test_bounding_box):
 
 @pytest.fixture(scope="session")
 def t2(authfile, test_evalscript, test_collection, test_area_name):
-    # example of query with direct area name
+    """Set a test query with area name"""
     t2 = es.EarthSpy(authfile)
     t2.set_query_parameters(
         bounding_box=test_area_name,
@@ -133,7 +152,7 @@ def t2(authfile, test_evalscript, test_collection, test_area_name):
 
 @pytest.fixture(scope="session")
 def t3(authfile, test_evalscript, test_collection, test_bounding_box):
-    # example of query with direct mode
+    """Set a test query with direct download mode"""
     t3 = es.EarthSpy(authfile)
     t3.set_query_parameters(
         bounding_box=test_bounding_box,
@@ -147,7 +166,7 @@ def t3(authfile, test_evalscript, test_collection, test_bounding_box):
 
 @pytest.fixture(scope="session")
 def t4(authfile, test_evalscript, test_collection, test_bounding_box):
-    # example of query with direct mode
+    """Set a test query with LZW raster compression"""
     t4 = es.EarthSpy(authfile)
     t4.set_query_parameters(
         bounding_box=test_bounding_box,
