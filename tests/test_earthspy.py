@@ -5,11 +5,14 @@
 
 """
 
+import glob
+import json
+import os
+
 import numpy as np
 import pandas as pd
 import requests
 import sentinelhub as shb
-
 
 def test_init(t1, SH_CLIENT_ID, SH_CLIENT_SECRET) -> None:
     """Test auth.txt parsing and connection configuration."""
