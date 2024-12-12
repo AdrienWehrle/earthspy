@@ -31,14 +31,20 @@ if os.getenv("CI") is not None:
 
     # path to credential file to be created
     @pytest.fixture(scope="session")
-    def authfile(pytestconfig):
+    def authfile():
         """Set credential file name"""
         authfile = "auth.txt"
         return authfile
 
-    # create file containing credentials for testing
-    with open(authfile, "w") as out:
-        out.write(f"{SH_CLIENT_ID}\n{SH_CLIENT_SECRET}")
+    # path to credential file to be created
+    @pytest.fixture(scope="session")
+    def write_authfile(authfile):
+        """Create file containing credentials for testing"""
+        with open(authfile, "w") as out:
+            out.write(f"{SH_CLIENT_ID}\n{SH_CLIENT_SECRET}")
+
+        return None
+
 
 # if running locally
 else:
