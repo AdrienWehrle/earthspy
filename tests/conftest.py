@@ -25,13 +25,21 @@ def pytest_addoption(parser):
 # if running in Github action
 if os.getenv("CI") is not None:
 
-    # create local variables from environment secrets for convenience
-    SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
-    SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
+    @pytest.fixture(scope="session")
+    def SH_CLIENT_ID() -> None:
+        """Create local client id from environment variable"""
+        SH_CLIENT_ID = os.environ["SH_CLIENT_ID"]
+        return SH_CLIENT_ID
+
+    @pytest.fixture(scope="session")
+    def SH_CLIENT_SECRET() -> None:
+        """Create local client secret from environment variable"""
+        SH_CLIENT_SECRET = os.environ["SH_CLIENT_SECRET"]
+        return SH_CLIENT_SECRET
 
     # path to credential file to be created
     @pytest.fixture(scope="session")
-    def authfile():
+    def authfile(SH_CLIENT_ID, SH_CLIENT_SECRET):
         """Set credential file name and create credential file
         for testing"""
         authfile = "auth.txt"
