@@ -203,21 +203,18 @@ class EarthSpy:
         :rtype: Union[None, str]
         """
 
-        if raster_compression in [
-            "DEFLATE",
-            "LZW",
-            "PACKBITS",
-            "JPEG",
-            "WEBP",
-            "LZMA",
-            "ZSTD",
-        ]:
+        # list rasterio compression algorithm and exclude dunders
+        rasterio_compression_algorithms = [
+            m for m in dir(rasterio.enums.Compression) if not m.startswith("__")
+        ]
 
+        # use rasterio compression method as is
+        if raster_compression.lower() in rasterio_compression_algorithms:
             self.raster_compression = raster_compression
         elif raster_compression is None:
             self.raster_compression = None
         else:
-            raise KeyError("Compression mode not found")
+            raise KeyError("Compression algorithm not found")
 
         return self.raster_compression
 
