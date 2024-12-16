@@ -942,7 +942,7 @@ class EarthSpy:
             if self.download_mode == "D":
                 # build new file name
                 new_filename = (
-                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}_{self.label}.tif"
+                    f"{self.store_folder}/" + "{date}_{self.data_collection_str}.tif"
                 )
 
                 # If SICE, don't rename file but move to date folder
@@ -972,7 +972,7 @@ class EarthSpy:
                 # build new file name
                 new_filename = (
                     f"{self.store_folder}/"
-                    + f"{date}_{self.data_collection_str}_{split_box_id}_{self.label}.tif"
+                    + f"{date}_{self.data_collection_str}_{split_box_id}.tif"
                 )
 
                 # if SICE, add split box id in all names and move to date folder
@@ -1048,7 +1048,7 @@ class EarthSpy:
                 # and add download method name (SM)
                 date_output_filename = date_response_files[0].replace(
                     "_0.tif",
-                    "_SM_mosaic.tif",
+                    f"_SM_mosaic_{self.label}.tif",
                 )
 
                 # open files to merge
