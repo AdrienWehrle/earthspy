@@ -296,6 +296,6 @@ def test_get_raster_compression(t3, t4) -> None:
     comp_def = t3.raster_compression
     assert comp_def is None
 
-    # check raster compression sith mode specified
+    # check raster compression with mode specified
     comp_cust = t4.raster_compression
     assert comp_cust == "LZW"
