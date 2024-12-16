@@ -290,8 +290,11 @@ def test_merge_rasters() -> None:
     # assert len(t3.outputs) == len(t3.split_boxes)
 
 
-# def test_get_raster_compression(t4) -> None:
-#     """"""
-
-#     comp_def = t4.raster_compression()
-#     assert  comp_def == None
+def test_get_raster_compression(t3, t4) -> None:
+    """"""
+    
+    comp_def = t3.raster_compression
+    assert  comp_def == None
+    
+    comp_cust = t4.raster_compression
+    assert comp_cust == "LZW"

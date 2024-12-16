@@ -209,10 +209,10 @@ class EarthSpy:
         ]
 
         # use rasterio compression method as is
-        if raster_compression.lower() in rasterio_compression_algorithms:
-            self.raster_compression = raster_compression
-        elif raster_compression is None:
+        if raster_compression is None:
             self.raster_compression = None
+        elif raster_compression.lower() in rasterio_compression_algorithms:
+            self.raster_compression = raster_compression
         else:
             raise KeyError("Compression algorithm not found")
 
