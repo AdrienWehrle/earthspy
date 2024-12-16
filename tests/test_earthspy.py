@@ -291,10 +291,11 @@ def test_merge_rasters() -> None:
 
 
 def test_get_raster_compression(t3, t4) -> None:
-    """"""
-    
+    """Test raster compression"""
+    # check default raster compression
     comp_def = t3.raster_compression
     assert  comp_def == None
     
+    # check raster compression sith mode specified
     comp_cust = t4.raster_compression
     assert comp_cust == "LZW"
