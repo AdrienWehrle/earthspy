@@ -12,12 +12,6 @@
 
 `earthspy` is a wrapper around methods for the download of satellite data offered in the [sentinelhub-py Python package](https://github.com/sentinel-hub/sentinelhub-py). This tool makes the monitoring and study of any place on Earth simple, ready to use and easily deployable for operational purposes and automated Near-Real Time (NRT) applications.
 
-Some useful capabilities:
-  - Data download in multiprocessing
-  - Data download at optimized resolutions with the Direct (D) download mode
-  - Data download at native resolutions with the Split and Merge (SM) downlodad mode
-  - Data storage with efficient structure and file naming
-
 As `earthspy` is built on top of the [Sentinel Hub services](https://www.sentinel-hub.com/), it includes e.g. the data pre-processing through [custom scripts](https://docs.sentinel-hub.com/api/latest/evalscript/) allowing the user to process and download only the products needed (such as high-level indices) therefore optimizing download time and local storage.
 
 #  Table of Contents
