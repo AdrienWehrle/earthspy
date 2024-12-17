@@ -65,14 +65,16 @@ pip install -e .
 If your PR targets the implementation of a new feature or the
 improvement of existing ones, please add at least one test per feature
 (in the associated
-[`tests/test_earthspy.py`](https://github.com/AdrienWehrle/earthspy/blob/main/LICENSE)
+[`tests/test_earthspy.py`](https://github.com/AdrienWehrle/earthspy/blob/main/tests/test_earthspy.py)
 file) and include them in your PR, using `pytest` (see existing tests
 for examples).
 
-To run the entire test suite, run pytest in the current directory:
+To run the entire test suite locally, run pytest in the current
+directory by passing the full path to your Sentinel Hub credential
+file:
 
 ```bash
-pytest
+pytest --authfile=/path/to/auth.txt
 ```
 
 
