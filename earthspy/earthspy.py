@@ -1,6 +1,6 @@
 """
 
-@author: Adrien Wehrlé, EO-IO, University of Zurich, Switzerland
+@authors: Adrien Wehrlé (EO-IO), Antsalacia
 
 """
 
@@ -84,6 +84,7 @@ class EarthSpy:
         download_mode: str = "SM",
         remove_splitboxes: bool = True,
         verbose: bool = True,
+        raster_compression: str = None,
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -144,6 +145,11 @@ class EarthSpy:
         :param verbose: Whether to print processing status or not, defaults
           to True.
         :type verbose: bool, optional
+
+
+        :param raster_compression: Raster compression to apply following methods
+          available in rasterio, defaults to None.
+        :type raster_compression: Union[None, str], optional
         """
 
         # set processing attributes
@@ -171,6 +177,9 @@ class EarthSpy:
         # set and correct resolution
         self.set_correct_resolution()
 
+        # set compression method
+        self.get_raster_compression(raster_compression)
+
         # set post-processing attributes
         self.get_evaluation_script(evaluation_script)
         self.get_store_folder(store_folder)
@@ -186,6 +195,28 @@ class EarthSpy:
             self.set_split_boxes_ids()
 
         return None
+
+    def get_raster_compression(self, raster_compression: Union[None, str]) -> str:
+        """Get raster compression based on rasterio's available methods
+
+        :return: Raster compression method
+        :rtype: Union[None, str]
+        """
+
+        # list rasterio compression algorithm and exclude dunders
+        rasterio_compression_algorithms = [
+            m for m in dir(rasterio.enums.Compression) if not m.startswith("__")
+        ]
+
+        # use rasterio compression method as is
+        if raster_compression is None:
+            self.raster_compression = None
+        elif raster_compression.lower() in rasterio_compression_algorithms:
+            self.raster_compression = raster_compression
+        else:
+            raise KeyError("Compression algorithm not found")
+
+        return self.raster_compression
 
     def get_data_collection(self) -> shb.DataCollection:
         """Get Sentinel Hub DataCollection object from data collection name.
@@ -294,7 +325,6 @@ class EarthSpy:
 
         :return: Data collection resolution.
         :rtype: int
-
         """
 
         # set default satellite resolution
@@ -1072,11 +1102,19 @@ class EarthSpy:
                         "transform": output_transform,
                     }
                 )
+
+                # update dictionary if compression set
+                if self.raster_compression is not None:
+                    output_meta.update({"compress": self.raster_compression})
+
+                # extract scene id
                 id_dict = {k: self.metadata[date][0][k] for k in ["id"]}
+
                 # write mosaic
                 with rasterio.open(date_output_filename, "w", **output_meta) as dst:
                     dst.write(mosaic)
                     dst.update_tags(**id_dict)
+
                 # save file name of merged raster
                 self.output_filenames_renamed.append(date_output_filename)
 
