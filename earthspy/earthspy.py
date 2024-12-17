@@ -177,7 +177,7 @@ class EarthSpy:
         # set and correct resolution
         self.set_correct_resolution()
 
-        # set compress mode
+        # set compression method
         self.get_raster_compression(raster_compression)
 
         # set post-processing attributes
