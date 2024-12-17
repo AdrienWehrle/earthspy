@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 
-@author: Adrien Wehrlé, University of Zurich, Switzerland
+@authors: Adrien Wehrlé (EO-IO), Antsalacia
 
 """
 
