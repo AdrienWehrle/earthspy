@@ -85,6 +85,7 @@ class EarthSpy:
         remove_splitboxes: bool = True,
         verbose: bool = True,
         raster_compression: str = None,
+        label: str = None,
     ) -> None:
         """Define a set of parameters used for the API request.
 
@@ -146,10 +147,13 @@ class EarthSpy:
           to True.
         :type verbose: bool, optional
 
-
         :param raster_compression: Raster compression to apply following methods
           available in rasterio, defaults to None.
         :type raster_compression: Union[None, str], optional
+
+        :param label: User input string put at the end of the file name,
+        defaults to None.
+        :type label: str, optionnal
         """
 
         # set processing attributes
@@ -186,6 +190,9 @@ class EarthSpy:
 
         # find available data within user time range
         self.get_available_data()
+        
+        # set user input string for file name
+        self.label = label
 
         # set download mode
         if download_mode == "D":
@@ -1081,7 +1088,7 @@ class EarthSpy:
                 # and add download method name (SM)
                 date_output_filename = date_response_files[0].replace(
                     "_0.tif",
-                    "_SM_mosaic.tif",
+                    f"_SM_mosaic_{self.label}.tif",
                 )
 
                 # open files to merge
